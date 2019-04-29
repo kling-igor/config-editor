@@ -1,6 +1,6 @@
 import webpack from "webpack";
 import HTMLWebpackPlugin from "html-webpack-plugin";
-import { resolve, join } from "path"
+import { resolve, join } from "path";
 import packagejson from "./package.json";
 
 module.exports = env => ({
@@ -23,10 +23,7 @@ module.exports = env => ({
   devtool: env.dev ? "inline-source-map" : false,
 
   resolve: {
-    modules: [
-      join(__dirname, "."),
-      join(__dirname, "src")
-    ]
+    modules: [join(__dirname, "."), join(__dirname, "src")]
   },
 
   plugins: [
@@ -44,19 +41,9 @@ module.exports = env => ({
     rules: [
       {
         test: /.jsx?$/,
-        include: [
-          join(__dirname, "src")
-        ],
+        include: [join(__dirname, "src")],
         use: {
-          loader: 'babel-loader',
-          options: {
-            presets: [["@babel/preset-env", { "useBuiltIns": "usage" }], "@babel/preset-react"],
-            plugins: [
-              ["@babel/plugin-proposal-decorators", { legacy: true }],
-              ["@babel/plugin-proposal-class-properties", { loose: true }],
-              "@babel/plugin-proposal-object-rest-spread"
-            ]
-          }
+          loader: "babel-loader"
         }
       },
       {
