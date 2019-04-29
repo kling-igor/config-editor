@@ -1,6 +1,10 @@
-import React, { PureComponent } from "react"
+import React, { PureComponent } from 'react'
 
-import styled, { createGlobalStyle } from "styled-components"
+import styled, { createGlobalStyle } from 'styled-components'
+
+import './app.css'
+
+import ConfigEditor from './config-edtor'
 
 const GlobalStyle = createGlobalStyle`
   html {
@@ -30,14 +34,14 @@ const GlobalStyle = createGlobalStyle`
 
     padding: 8px;
   }
-`;
+`
 
 export default class App extends PureComponent {
   render() {
     return (
       <>
         <GlobalStyle />
-        <div>HELLO WORLD!</div>
+        <ConfigEditor />
       </>
     )
   }
