@@ -1,6 +1,5 @@
 import React, { Component } from 'react'
 import styled, { withTheme } from 'styled-components'
-import * as R from 'ramda'
 
 import configSchema from './config-schema'
 
@@ -23,29 +22,7 @@ export const uncamelcase = string => {
   return capitalize(result.trim())
 }
 
-export const lensSet = (path, value, target) => {
-  const lens = R.lensPath(path.split('.'))
-  return R.set(lens, value, target)
-}
-/*
-const onChange = state => key => ({ target }) => {
-  const { type, value, checked } = target
-  const actualValue = type === 'checkbox' ? checked : value
-
-  Object.assign(state, lensSet(key, actualValue, state))
-  // propertiesDidChange()
-}
-
-const onClick = state => key => value => {
-  Object.assign(state, lensSet(key, value, state))
-  // propertiesDidChange()
-}
-
-const onSelect = state => key => value => {
-  Object.assign(state, lensSet(key, value, state))
-  // propertiesDidChange()
-}
-*/
+// core как параметр !!! - это раздел конфигурации
 
 export default class ConfigEditor extends Component {
   constructor(props) {
@@ -98,7 +75,7 @@ export default class ConfigEditor extends Component {
 
   render() {
     return (
-      <div style={{ height: '100%' }}>
+      <div>
         {Object.entries(configSchema.core).map(([key, item]) => {
           let Control = null
           const label = uncamelcase(key)

@@ -23,18 +23,32 @@ const CheckboxDescriptionStyle = styled.div`
   opacity: 0.6;
 `
 
+const Description = Style => ({ children }) => {
+  return (
+    <Style>
+      <ReactMarkdown
+        source={children}
+        allowedTypes={['text', 'paragraph', 'emphasis', 'strong', 'delete', 'link', 'heading', 'inlineCode', 'code']}
+      />
+    </Style>
+  )
+}
+
+const CheckboxDescription = Description(CheckboxDescriptionStyle)
+
+const RegularDescription = Description(DescriptionStyle)
+
 export const CheckboxComponent = (label, defaultValue, description) => ({ value, onChange }) => {
   const onchange = ({ target: { checked } }) => onChange(checked)
 
   const tooltip = <span>{`Default: ${defaultValue}`}</span>
+
   return (
     <>
       <Tooltip content={tooltip} intent={Intent.PRIMARY} position={Position.BOTTOM_LEFT}>
         <Checkbox className="vision" label={label} checked={value} onChange={onchange} />
       </Tooltip>
-      <CheckboxDescriptionStyle>
-        <ReactMarkdown source={description} />
-      </CheckboxDescriptionStyle>
+      <CheckboxDescription>{description}</CheckboxDescription>
     </>
   )
 }
@@ -47,9 +61,7 @@ export const TextInputComponent = (label, defaultValue, description) => ({ value
   return (
     <>
       <LabelStyle>{label}</LabelStyle>
-      <DescriptionStyle>
-        <ReactMarkdown source={description} />
-      </DescriptionStyle>
+      <RegularDescription>{description}</RegularDescription>
       <Tooltip content={tooltip} intent={Intent.PRIMARY} position={Position.TOP_LEFT}>
         <InputGroup fill={true} small placeholder={placeholder} onChange={onchange} value={actualValue} />
       </Tooltip>
@@ -66,9 +78,7 @@ export const NumberInputComponent = (label, defaultValue, description) => ({ val
   return (
     <>
       <LabelStyle>{label}</LabelStyle>
-      <DescriptionStyle>
-        <ReactMarkdown source={description} />
-      </DescriptionStyle>
+      <RegularDescription>{description}</RegularDescription>
       <Tooltip content={tooltip} intent={Intent.PRIMARY} usePortal={true} position={Position.TOP_LEFT}>
         <NumericInput fill={true} small placeholder={placeholder} onChange={onchange} value={actualValue} min={0} />
       </Tooltip>
@@ -84,9 +94,7 @@ export const IntegerInputComponent = (label, defaultValue, description) => ({ va
   return (
     <>
       <LabelStyle>{label}</LabelStyle>
-      <DescriptionStyle>
-        <ReactMarkdown source={description} />
-      </DescriptionStyle>
+      <RegularDescription>{description}</RegularDescription>
       <Tooltip intent={Intent.PRIMARY} content={tooltip} position={Position.TOP_LEFT}>
         <NumericInput
           fill={true}
@@ -109,7 +117,7 @@ export const OptionsComponent = (label, options, defaultValue, description) => (
   return (
     <>
       <LabelStyle>{label}</LabelStyle>
-      <DescriptionStyle>{description}</DescriptionStyle>
+      <RegularDescription>{description}</RegularDescription>
       <Tooltip content={tooltip} intent={Intent.PRIMARY} position={Position.TOP_LEFT}>
         <HTMLSelect options={options} fill onChange={onchange} value={value} />
       </Tooltip>
