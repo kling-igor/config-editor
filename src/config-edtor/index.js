@@ -65,25 +65,27 @@ export default class ConfigEditor extends Component {
         {Object.entries(configSchema.core).map(([key, item]) => {
           let Control = null
           const label = uncamelcase(key)
-          if (item.type === 'boolean') {
-            Control = CheckboxComponent(label, item.description)
+
+          if (item.enum) {
+            Control = OptionsComponent(label, item.enum, item.default, item.description)
+          } else if (item.type === 'boolean') {
+            Control = CheckboxComponent(label, item.default, item.description)
           } else if (item.type === 'string') {
-            Control = TextInputComponent(label, `Default: ${item.default}`, item.description)
+            Control = TextInputComponent(label, item.default, item.description)
           } else if (item.type === 'number') {
-            Control = NumberInputComponent(label, `Default: ${item.default}`, item.description)
+            Control = NumberInputComponent(label, item.default, item.description)
           } else if (item.type === 'integer') {
-            Control = IntegerInputComponent(label, `Default: ${item.default}`, item.description)
+            Control = IntegerInputComponent(label, item.default, item.description)
           }
 
           return (
-            <div key={key}>
+            <div key={key} style={{ marginTop: 10, marginBottom: 10 }}>
               <Control
                 value={this.configState[key].value}
                 onChange={onChange(this.configState)(key)}
                 onClick={onClick(this.configState)(key)}
                 onSelect={onSelect(this.configState)(key)}
               />
-              <br />
             </div>
           )
         })}

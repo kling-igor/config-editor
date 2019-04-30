@@ -40,7 +40,12 @@ const GlobalStyle = createGlobalStyle`
   }
 
   label.bp3-control.bp3-checkbox.vision {
-    font-weight: 700;
+    font-size: 1.2em;
+  }
+
+  /*иначе погруженные в tooltip формы скукоживаются*/
+  span.bp3-popover-target {
+    display: block;
   }
 `
 
