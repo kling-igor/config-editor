@@ -27,7 +27,7 @@ export const lensSet = (path, value, target) => {
   const lens = R.lensPath(path.split('.'))
   return R.set(lens, value, target)
 }
-
+/*
 const onChange = state => key => ({ target }) => {
   const { type, value, checked } = target
   const actualValue = type === 'checkbox' ? checked : value
@@ -45,6 +45,7 @@ const onSelect = state => key => value => {
   Object.assign(state, lensSet(key, value, state))
   // propertiesDidChange()
 }
+*/
 
 export default class ConfigEditor extends Component {
   constructor(props) {
@@ -63,15 +64,14 @@ export default class ConfigEditor extends Component {
    * для всех ключей, что есть в схеме создаем объект состояния значением берется из объекта config или если нет, то дефолтное значение схемы
    */
   configToState = config => {
-    const state = {}
+    const state = { core: {} }
 
     const configKeys = Object.keys(config.core)
-
     for (const key in configSchema.core) {
-      if (key in configKeys) {
-        state[key] = config.core[key]
+      if (configKeys.includes(key)) {
+        state.core[key] = config.core[key]
       } else {
-        state[key] = configSchema.core[key]['default']
+        state.core[key] = configSchema.core[key]['default']
       }
     }
 
@@ -100,6 +100,7 @@ export default class ConfigEditor extends Component {
     return (
       <div style={{ height: '100%' }}>
         {Object.entries(configSchema.core).map(([key, item]) => {
+          console.log('KEY:', key)
           let Control = null
           const label = uncamelcase(key)
 
@@ -115,14 +116,18 @@ export default class ConfigEditor extends Component {
             Control = IntegerInputComponent(label, item.default, item.description)
           }
 
+          const onChange = value => {
+            this.configState.core[key] = value
+            // propertiesDidChange()
+
+            console.log('STATE:', this.configState)
+          }
+
+          console.log('VALUE:', this.configState.core[key])
+
           return (
             <div key={key} style={{ marginTop: 10, marginBottom: 10 }}>
-              <Control
-                value={this.configState[key].value}
-                onChange={onChange(this.configState)(key)}
-                onClick={onClick(this.configState)(key)}
-                onSelect={onSelect(this.configState)(key)}
-              />
+              <Control value={this.configState.core[key]} onChange={onChange} />
             </div>
           )
         })}

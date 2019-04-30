@@ -49,7 +49,7 @@ const GlobalStyle = createGlobalStyle`
   }
 `
 // считанные данные из файла
-const config = { core: {} }
+const config = { core: { warnOnLargeFileLimit: 20 } }
 
 export default class App extends PureComponent {
   render() {

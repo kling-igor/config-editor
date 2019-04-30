@@ -23,11 +23,13 @@ const CheckboxDescriptionStyle = styled.p`
 `
 
 export const CheckboxComponent = (label, defaultValue, description) => ({ value, onChange }) => {
+  const onchange = ({ target: { checked } }) => onChange(checked)
+
   const tooltip = <span>{`Default: ${defaultValue}`}</span>
   return (
     <>
-      <Tooltip content={tooltip} intent={Intent.PRIMARY} position={Position.RIGHT}>
-        <Checkbox className="vision" label={label} checked={value} onChange={onChange} />
+      <Tooltip content={tooltip} intent={Intent.PRIMARY} position={Position.BOTTOM_LEFT}>
+        <Checkbox className="vision" label={label} checked={value} onChange={onchange} />
       </Tooltip>
       <CheckboxDescriptionStyle>{description}</CheckboxDescriptionStyle>
     </>
@@ -35,46 +37,50 @@ export const CheckboxComponent = (label, defaultValue, description) => ({ value,
 }
 
 export const TextInputComponent = (label, defaultValue, description) => ({ value, onChange }) => {
+  const onchange = ({ target: { value } }) => onChange(value)
+
   const placeholder = `Default: ${defaultValue}`
   const tooltip = <span>{placeholder}</span>
   return (
     <>
       <LabelStyle>{label}</LabelStyle>
       <DescriptionStyle>{description}</DescriptionStyle>
-      <Tooltip content={tooltip} intent={Intent.PRIMARY}>
-        <InputGroup fill={true} small placeholder={placeholder} onChange={onChange} value={value} />
+      <Tooltip content={tooltip} intent={Intent.PRIMARY} position={Position.TOP_LEFT}>
+        <InputGroup fill={true} small placeholder={placeholder} onChange={onchange} value={value} />
       </Tooltip>
     </>
   )
 }
 
 export const NumberInputComponent = (label, defaultValue, description) => ({ value, onChange }) => {
+  const onchange = ({ target: { value } }) => onChange(value)
   const placeholder = `Default: ${defaultValue}`
   const tooltip = <span>{placeholder}</span>
   return (
     <>
       <LabelStyle>{label}</LabelStyle>
       <DescriptionStyle>{description}</DescriptionStyle>
-      <Tooltip content={tooltip} intent={Intent.PRIMARY} usePortal={true}>
-        <NumericInput fill={true} small placeholder={placeholder} onChange={onChange} value={value} min={0} />
+      <Tooltip content={tooltip} intent={Intent.PRIMARY} usePortal={true} position={Position.TOP_LEFT}>
+        <NumericInput fill={true} small placeholder={placeholder} onChange={onchange} value={value} min={0} />
       </Tooltip>
     </>
   )
 }
 
 export const IntegerInputComponent = (label, defaultValue, description) => ({ value, onChange }) => {
+  const onchange = ({ target: { value } }) => onChange(value)
   const placeholder = `Default: ${defaultValue}`
   const tooltip = <span>{placeholder}</span>
   return (
     <>
       <LabelStyle>{label}</LabelStyle>
       <DescriptionStyle>{description}</DescriptionStyle>
-      <Tooltip intent={Intent.PRIMARY} content={tooltip}>
+      <Tooltip intent={Intent.PRIMARY} content={tooltip} position={Position.TOP_LEFT}>
         <NumericInput
           fill={true}
           small
           placeholder={placeholder}
-          onChange={onChange}
+          onChange={onchange}
           value={value}
           min={0}
           minorStepSize={null}
@@ -86,12 +92,13 @@ export const IntegerInputComponent = (label, defaultValue, description) => ({ va
 }
 
 export const OptionsComponent = (label, options, defaultValue, description) => ({ value, onChange }) => {
+  const onchange = ({ target: { value } }) => onChange(value)
   const tooltip = <span>{`Default: ${defaultValue}`}</span>
   return (
     <>
       <LabelStyle>{label}</LabelStyle>
       <DescriptionStyle>{description}</DescriptionStyle>
-      <Tooltip content={tooltip} intent={Intent.PRIMARY}>
+      <Tooltip content={tooltip} intent={Intent.PRIMARY} position={Position.TOP_LEFT}>
         <HTMLSelect options={options} fill onChange={onChange} value={value} />
       </Tooltip>
     </>
