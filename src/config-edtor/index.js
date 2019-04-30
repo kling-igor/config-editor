@@ -53,10 +53,47 @@ export default class ConfigEditor extends Component {
     // ПОКА ТОЛЬКО ДЛЯ CORE ДЕЛАЕМ
     this.items = Object.values(configSchema.core)
 
-    this.config = {} // данные, считанные из файла
+    const { config } = props
 
-    // сюда нужно мержить значения из считанного файла и убирать те, что равны дефолтным
-    this.configState = Object.assign({}, configSchema.core)
+    this.configState = this.configToState(config)
+    console.log('configState:', this.configState)
+  }
+
+  /**
+   * для всех ключей, что есть в схеме создаем объект состояния значением берется из объекта config или если нет, то дефолтное значение схемы
+   */
+  configToState = config => {
+    const state = {}
+
+    const configKeys = Object.keys(config.core)
+
+    for (const key in configSchema.core) {
+      if (key in configKeys) {
+        state[key] = config.core[key]
+      } else {
+        state[key] = configSchema.core[key]['default']
+      }
+    }
+
+    return state
+  }
+
+  /**
+   * для всех ключей, что есть в схеме
+   * если значение в состоянии ЕСТЬ и совпадает с дефолтным, то пропускаем этот ключ
+   * если значение в состоянии ЕСТЬ и не совпадает, то заносим в результат
+   * иначе пропускаем
+   */
+  stateToConf = state => {
+    const config = { core: {} }
+
+    for (const key in configSchema.core) {
+      if (state.core[key] != null && state.core[key] !== configSchema.core[key]['default']) {
+        config.core[key] = state.core[key]
+      }
+    }
+
+    return config
   }
 
   render() {

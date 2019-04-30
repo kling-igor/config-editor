@@ -48,13 +48,15 @@ const GlobalStyle = createGlobalStyle`
     display: block;
   }
 `
+// считанные данные из файла
+const config = { core: {} }
 
 export default class App extends PureComponent {
   render() {
     return (
       <>
         <GlobalStyle />
-        <ConfigEditor />
+        <ConfigEditor config={config} />
       </>
     )
   }
