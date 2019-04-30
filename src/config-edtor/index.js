@@ -4,7 +4,13 @@ import * as R from 'ramda'
 
 import configSchema from './config-schema'
 
-import { CheckboxComponent, TextInputComponent, NumberInputComponent, OptionsComponent } from './components'
+import {
+  CheckboxComponent,
+  TextInputComponent,
+  NumberInputComponent,
+  IntegerInputComponent,
+  OptionsComponent
+} from './components'
 
 // hello --> Hello
 export const capitalize = word => (word ? word[0].toUpperCase() + word.slice(1) : '')
@@ -64,8 +70,9 @@ export default class ConfigEditor extends Component {
           } else if (item.type === 'string') {
             Control = TextInputComponent(label, `Default: ${item.default}`, item.description)
           } else if (item.type === 'number') {
-            // Control = NumberInputComponent(key, uncamelcase(key), `Default: ${item.default}`)
-            Control = <></>
+            Control = NumberInputComponent(label, `Default: ${item.default}`, item.description)
+          } else if (item.type === 'integer') {
+            Control = IntegerInputComponent(label, `Default: ${item.default}`, item.description)
           }
 
           return (

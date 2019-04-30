@@ -38,6 +38,10 @@ const GlobalStyle = createGlobalStyle`
   .bp3-control.vision {
     margin-bottom: 4px;
   }
+
+  label.bp3-control.bp3-checkbox.vision {
+    font-weight: 700;
+  }
 `
 
 export default class App extends PureComponent {
