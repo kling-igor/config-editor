@@ -12,6 +12,8 @@
   "license": "ISC",
   "dependencies": {
     "@blueprintjs/core": "^3.11.0",
+    "color": "^3.1.1",
+    "lodash": "^4.17.11",
     "mobx": "^5.8.0",
     "mobx-react": "^5.4.3",
     "ramda": "^0.26.1",
