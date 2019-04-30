@@ -100,7 +100,6 @@ export default class ConfigEditor extends Component {
     return (
       <div style={{ height: '100%' }}>
         {Object.entries(configSchema.core).map(([key, item]) => {
-          console.log('KEY:', key)
           let Control = null
           const label = uncamelcase(key)
 
@@ -119,11 +118,8 @@ export default class ConfigEditor extends Component {
           const onChange = value => {
             this.configState.core[key] = value
             // propertiesDidChange()
-
             console.log('STATE:', this.configState)
           }
-
-          console.log('VALUE:', this.configState.core[key])
 
           return (
             <div key={key} style={{ marginTop: 10, marginBottom: 10 }}>

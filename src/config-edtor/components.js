@@ -4,19 +4,20 @@ import { FormGroup, InputGroup, NumericInput } from '@blueprintjs/core'
 import { Label, HTMLSelect } from '@blueprintjs/core'
 import { Tooltip, Position, Intent } from '@blueprintjs/core'
 import styled, { withTheme } from 'styled-components'
+import ReactMarkdown from 'react-markdown'
 
 const LabelStyle = styled.p`
   margin-bottom: 2px;
   font-size: 1.2em;
 `
 
-const DescriptionStyle = styled.p`
+const DescriptionStyle = styled.div`
   font-size: 0.9em;
   margin-bottom: 4px;
   opacity: 0.6;
 `
 
-const CheckboxDescriptionStyle = styled.p`
+const CheckboxDescriptionStyle = styled.div`
   font-size: 0.9em;
   margin-left: 26px;
   opacity: 0.6;
@@ -31,7 +32,9 @@ export const CheckboxComponent = (label, defaultValue, description) => ({ value,
       <Tooltip content={tooltip} intent={Intent.PRIMARY} position={Position.BOTTOM_LEFT}>
         <Checkbox className="vision" label={label} checked={value} onChange={onchange} />
       </Tooltip>
-      <CheckboxDescriptionStyle>{description}</CheckboxDescriptionStyle>
+      <CheckboxDescriptionStyle>
+        <ReactMarkdown source={description} />
+      </CheckboxDescriptionStyle>
     </>
   )
 }
@@ -44,7 +47,9 @@ export const TextInputComponent = (label, defaultValue, description) => ({ value
   return (
     <>
       <LabelStyle>{label}</LabelStyle>
-      <DescriptionStyle>{description}</DescriptionStyle>
+      <DescriptionStyle>
+        <ReactMarkdown source={description} />
+      </DescriptionStyle>
       <Tooltip content={tooltip} intent={Intent.PRIMARY} position={Position.TOP_LEFT}>
         <InputGroup fill={true} small placeholder={placeholder} onChange={onchange} value={actualValue} />
       </Tooltip>
@@ -61,7 +66,9 @@ export const NumberInputComponent = (label, defaultValue, description) => ({ val
   return (
     <>
       <LabelStyle>{label}</LabelStyle>
-      <DescriptionStyle>{description}</DescriptionStyle>
+      <DescriptionStyle>
+        <ReactMarkdown source={description} />
+      </DescriptionStyle>
       <Tooltip content={tooltip} intent={Intent.PRIMARY} usePortal={true} position={Position.TOP_LEFT}>
         <NumericInput fill={true} small placeholder={placeholder} onChange={onchange} value={actualValue} min={0} />
       </Tooltip>
@@ -77,7 +84,9 @@ export const IntegerInputComponent = (label, defaultValue, description) => ({ va
   return (
     <>
       <LabelStyle>{label}</LabelStyle>
-      <DescriptionStyle>{description}</DescriptionStyle>
+      <DescriptionStyle>
+        <ReactMarkdown source={description} />
+      </DescriptionStyle>
       <Tooltip intent={Intent.PRIMARY} content={tooltip} position={Position.TOP_LEFT}>
         <NumericInput
           fill={true}
