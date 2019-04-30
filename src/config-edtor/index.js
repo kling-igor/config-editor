@@ -47,6 +47,8 @@ export default class ConfigEditor extends Component {
     // ПОКА ТОЛЬКО ДЛЯ CORE ДЕЛАЕМ
     this.items = Object.values(configSchema.core)
 
+    this.config = {} // данные, считанные из файла
+
     // сюда нужно мержить значения из считанного файла и убирать те, что равны дефолтным
     this.configState = Object.assign({}, configSchema.core)
   }
@@ -55,13 +57,12 @@ export default class ConfigEditor extends Component {
     return (
       <div style={{ height: '100%' }}>
         {Object.entries(configSchema.core).map(([key, item]) => {
-          console.log(item.description)
-
           let Control = null
+          const label = uncamelcase(key)
           if (item.type === 'boolean') {
-            Control = CheckboxComponent(uncamelcase(key))
+            Control = CheckboxComponent(label, item.description)
           } else if (item.type === 'string') {
-            Control = TextInputComponent(key, uncamelcase(key), `Default: ${item.default}`)
+            Control = TextInputComponent(label, `Default: ${item.default}`, item.description)
           } else if (item.type === 'number') {
             // Control = NumberInputComponent(key, uncamelcase(key), `Default: ${item.default}`)
             Control = <></>
@@ -69,15 +70,13 @@ export default class ConfigEditor extends Component {
 
           return (
             <div key={key}>
-              <p>{uncamelcase(key)}</p>
-              <p style={{ fontSize: '0.9em' }}>{item.description}</p>
               <Control
-                key={key}
                 value={this.configState[key].value}
                 onChange={onChange(this.configState)(key)}
                 onClick={onClick(this.configState)(key)}
                 onSelect={onSelect(this.configState)(key)}
               />
+              <br />
             </div>
           )
         })}

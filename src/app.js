@@ -34,6 +34,10 @@ const GlobalStyle = createGlobalStyle`
 
     padding: 8px;
   }
+
+  .bp3-control.vision {
+    margin-bottom: 4px;
+  }
 `
 
 export default class App extends PureComponent {
