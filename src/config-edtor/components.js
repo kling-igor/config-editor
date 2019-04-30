@@ -38,15 +38,15 @@ export const CheckboxComponent = (label, defaultValue, description) => ({ value,
 
 export const TextInputComponent = (label, defaultValue, description) => ({ value, onChange }) => {
   const onchange = ({ target: { value } }) => onChange(value)
-
   const placeholder = `Default: ${defaultValue}`
   const tooltip = <span>{placeholder}</span>
+  const actualValue = value === defaultValue ? undefined : value
   return (
     <>
       <LabelStyle>{label}</LabelStyle>
       <DescriptionStyle>{description}</DescriptionStyle>
       <Tooltip content={tooltip} intent={Intent.PRIMARY} position={Position.TOP_LEFT}>
-        <InputGroup fill={true} small placeholder={placeholder} onChange={onchange} value={value} />
+        <InputGroup fill={true} small placeholder={placeholder} onChange={onchange} value={actualValue} />
       </Tooltip>
     </>
   )
@@ -56,12 +56,14 @@ export const NumberInputComponent = (label, defaultValue, description) => ({ val
   const onchange = ({ target: { value } }) => onChange(value)
   const placeholder = `Default: ${defaultValue}`
   const tooltip = <span>{placeholder}</span>
+  const actualValue = value === defaultValue ? undefined : value
+
   return (
     <>
       <LabelStyle>{label}</LabelStyle>
       <DescriptionStyle>{description}</DescriptionStyle>
       <Tooltip content={tooltip} intent={Intent.PRIMARY} usePortal={true} position={Position.TOP_LEFT}>
-        <NumericInput fill={true} small placeholder={placeholder} onChange={onchange} value={value} min={0} />
+        <NumericInput fill={true} small placeholder={placeholder} onChange={onchange} value={actualValue} min={0} />
       </Tooltip>
     </>
   )
@@ -71,6 +73,7 @@ export const IntegerInputComponent = (label, defaultValue, description) => ({ va
   const onchange = ({ target: { value } }) => onChange(value)
   const placeholder = `Default: ${defaultValue}`
   const tooltip = <span>{placeholder}</span>
+  const actualValue = value === defaultValue ? undefined : value
   return (
     <>
       <LabelStyle>{label}</LabelStyle>
@@ -81,7 +84,7 @@ export const IntegerInputComponent = (label, defaultValue, description) => ({ va
           small
           placeholder={placeholder}
           onChange={onchange}
-          value={value}
+          value={actualValue}
           min={0}
           minorStepSize={null}
           majorStepSize={null}
@@ -99,7 +102,7 @@ export const OptionsComponent = (label, options, defaultValue, description) => (
       <LabelStyle>{label}</LabelStyle>
       <DescriptionStyle>{description}</DescriptionStyle>
       <Tooltip content={tooltip} intent={Intent.PRIMARY} position={Position.TOP_LEFT}>
-        <HTMLSelect options={options} fill onChange={onChange} value={value} />
+        <HTMLSelect options={options} fill onChange={onchange} value={value} />
       </Tooltip>
     </>
   )
