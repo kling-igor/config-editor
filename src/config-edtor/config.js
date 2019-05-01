@@ -1,4 +1,5 @@
 import _ from 'lodash'
+import { Emitter } from 'event-kit'
 import Color from './color'
 import {
   getValueAtKeyPath,
@@ -7,6 +8,8 @@ import {
   pushKeyPath,
   splitKeyPath
 } from './key-path-helpers'
+
+const schemaEnforcers = {}
 
 const isPlainObject = value =>
   _.isObject(value) && !Array.isArray(value) && !_.isFunction(value) && !_.isString(value) && !(value instanceof Color)
@@ -93,7 +96,7 @@ const deepDefaults = function(target) {
  *   description: 'The directory where projects are assumed to be located. Packages created using the Package Generator will be stored here by default.'
  * }
  *
- * const configPath = path.join(process.env.VISION_HOME, 'config.cson')
+ * const configPath = path.join(process.env.VISION_HOME, 'config.json')
  *
  * this.config = new Config({
  *   saveCallback: settings => {
@@ -107,12 +110,62 @@ const deepDefaults = function(target) {
  * this.config.resetUserSettings(userSettings)
  */
 export default class Config {
+  static addSchemaEnforcer(typeName, enforcerFunction) {
+    if (schemaEnforcers[typeName] == null) {
+      schemaEnforcers[typeName] = []
+    }
+    return schemaEnforcers[typeName].push(enforcerFunction)
+  }
+
+  static addSchemaEnforcers(filters) {
+    for (let typeName in filters) {
+      const functions = filters[typeName]
+      for (let name in functions) {
+        const enforcerFunction = functions[name]
+        this.addSchemaEnforcer(typeName, enforcerFunction)
+      }
+    }
+  }
+
+  static executeSchemaEnforcers(keyPath, value, schema) {
+    console.log('executeSchemaEnforcers:', keyPath, value, JSON.stringify(schema))
+    let error = null
+    let types = schema.type
+    if (!Array.isArray(types)) {
+      types = [types]
+    }
+    for (let type of types) {
+      try {
+        const enforcerFunctions = schemaEnforcers[type].concat(schemaEnforcers['*'])
+        for (let enforcer of enforcerFunctions) {
+          // At some point in one's life, one must call upon an enforcer.
+          value = enforcer.call(this, keyPath, value, schema)
+        }
+        error = null
+        break
+      } catch (e) {
+        error = e
+      }
+    }
+
+    if (error != null) {
+      console.log('executeSchemaEnforcers ERROR:', error)
+
+      throw error
+    }
+
+    console.log('executeSchemaEnforcers ENFORCED TO:', value)
+    return value
+  }
+
   constructor(params = {}) {
     this.clear()
     this.initialize(params)
   }
 
   clear() {
+    this.emitter = new Emitter()
+
     this.schema = {
       type: 'object',
       properties: {}
@@ -120,6 +173,11 @@ export default class Config {
 
     this.defaultSettings = {}
     this.settings = {}
+    this.projectSettings = {}
+    this.projectFile = null
+
+    this.transactDepth = 0
+    this.pendingOperations = []
   }
 
   initialize({ saveCallback, mainSource, projectHomeSchema }) {
@@ -150,27 +208,119 @@ export default class Config {
   }
 
   /**
+   * Retrieves the setting for the given key
    * Note that with no value set, ::get returns the setting's default value.
    * @type {Function}
-   * @param  {...any} args
+   * @param {String} keyPath - the name of the key to retrieve
+   * @param {Object} [options]
+   * @param {String[]} [options.sources] - source names. If provided, only values that were associated with these sources during {::set} will be used
+   * @param {String[]} [options.excludeSources] - source names. If provided, values that  were associated with these sources during {::set} will not be used.
+   * @returns {Any} - the value from Vision's default settings, the user's configuration file in the type specified by the configuration schema
+   * @example
+   * // You might want to know what themes are enabled, so check `core.themes`
+   * vision.config.get('core.themes')
    * @example
    * vision.config.get('my-package.myKey') // -> 'defaultValue' if no value set
-   *
+   * @example
    * vision.config.set('my-package.myKey', 'value')
    * vision.config.get('my-package.myKey') // -> 'value'
-   *
    */
   get(...args) {
-    let keyPath, options, scope
+    let keyPath, options
     if (args.length > 1) {
       if (typeof args[0] === 'string' || args[0] == null) {
         ;[keyPath, options] = args
-        ;({ scope } = options)
       }
     } else {
       ;[keyPath] = args
     }
     return this.getRawValue(keyPath, options)
+  }
+
+  /**
+   * Sets the value for a configuration setting
+   * @type {Function}
+   * @param {String} keyPath - the name of the key
+   * @param {Any} [value] - the value of the setting. Passing `undefined` will revert the setting to the default value
+   * @param {String} [source] - the name of a file with which the settingis associated. Defaults to the user's config file
+   * @returns {Boolean} - `true` if the value was set, `false` if the value was not able to be coerced to the type specified in the setting's schema
+   * @example
+   * vision.config.set('core.themes', ['light-ui', 'light-syntax'])
+   */
+  set(...args) {
+    let [keyPath, value, options = {}] = args
+
+    if (!this.settingsLoaded) {
+      this.pendingOperations.push(() => this.set(keyPath, value, options))
+    }
+
+    let source = options.source
+    const shouldSave = options.save != null ? options.save : true
+
+    if (!source) source = this.mainSource
+
+    if (value !== undefined) {
+      try {
+        value = this.makeValueConformToSchema(keyPath, value)
+      } catch (e) {
+        return false
+      }
+    }
+
+    this.setRawValue(keyPath, value, { source })
+
+    if (source === this.mainSource && shouldSave && this.settingsLoaded) {
+      this.requestSave()
+    }
+    return true
+  }
+
+  /**
+   * Restore the setting at `keyPath` to its default value.
+   * @type {Function}
+   * @param {String} keyPath - the name of the key
+   * @param {String} [source] - the name of a file with which the settingis associated. Defaults to the user's config file
+   */
+  unset(keyPath, source) {
+    if (!this.settingsLoaded) {
+      this.pendingOperations.push(() => this.unset(keyPath, source))
+    }
+
+    if (source == null) {
+      source = this.mainSource
+    }
+
+    if (keyPath != null && source === this.mainSource) {
+      return this.set(keyPath, getValueAtKeyPath(this.defaultSettings, keyPath))
+    }
+  }
+
+  /**
+   * @private
+   * @type {Function}
+   * @param {String} keyPath
+   * @param {Any} value
+   * @param {Object} [options = {}]
+   */
+  setRawValue(keyPath, value, options = {}) {
+    const source = options.source ? options.source : undefined
+    const settingsToChange = source === this.projectFile ? 'projectSettings' : 'settings'
+    const defaultValue = getValueAtKeyPath(this.defaultSettings, keyPath)
+
+    if (_.isEqual(defaultValue, value)) {
+      if (keyPath != null) {
+        deleteValueAtKeyPath(this[settingsToChange], keyPath)
+      } else {
+        this[settingsToChange] = null
+      }
+    } else {
+      if (keyPath != null) {
+        setValueAtKeyPath(this[settingsToChange], keyPath, value)
+      } else {
+        this[settingsToChange] = value
+      }
+    }
+    return this.emitChangeEvent()
   }
 
   /**
@@ -202,6 +352,207 @@ export default class Config {
       return value
     } else {
       return deepClone(defaultValue)
+    }
+  }
+
+  setSchema(keyPath, schema) {
+    if (!isPlainObject(schema)) {
+      throw new Error(`Error loading schema for ${keyPath}: schemas can only be objects!`)
+    }
+
+    if (schema.type == null) {
+      throw new Error(`Error loading schema for ${keyPath}: schema objects must have a type attribute`)
+    }
+
+    let rootSchema = this.schema
+    if (keyPath) {
+      for (let key of splitKeyPath(keyPath)) {
+        rootSchema.type = 'object'
+        if (rootSchema.properties == null) {
+          rootSchema.properties = {}
+        }
+        const { properties } = rootSchema
+        if (properties[key] == null) {
+          properties[key] = {}
+        }
+        rootSchema = properties[key]
+      }
+    }
+
+    Object.assign(rootSchema, schema)
+    this.transact(() => {
+      this.setDefaults(keyPath, this.extractDefaultsFromSchema(schema))
+      this.resetSettingsForSchemaChange()
+    })
+  }
+
+  emitChangeEvent() {
+    if (this.transactDepth <= 0) {
+      return this.emitter.emit('did-change')
+    }
+  }
+
+  /**
+   * Retrieve the schema for a specific key path. The schema will tell you what
+   * type the keyPath expects, and other metadata about the config option.
+   * @type {Function}
+   * @param {String} keyPath - name of the key
+   * @returns {(Object|null)} eg. `{type: 'integer', default: 23, minimum: 1}` or `null` when the keyPath has no schema specified, but is accessible from the root schema.
+   */
+  getSchema(keyPath) {
+    const keys = splitKeyPath(keyPath)
+    let { schema } = this
+    for (let key of keys) {
+      let childSchema
+      if (schema.type === 'object') {
+        childSchema = schema.properties != null ? schema.properties[key] : undefined
+        if (childSchema == null) {
+          if (isPlainObject(schema.additionalProperties)) {
+            childSchema = schema.additionalProperties
+          } else if (schema.additionalProperties === false) {
+            return null
+          } else {
+            return { type: 'any' }
+          }
+        }
+      } else {
+        return null
+      }
+      schema = childSchema
+    }
+    return schema
+  }
+
+  setRawDefault(keyPath, value) {
+    setValueAtKeyPath(this.defaultSettings, keyPath, value)
+    return this.emitChangeEvent()
+  }
+
+  setDefaults(keyPath, defaults) {
+    if (defaults != null && isPlainObject(defaults)) {
+      const keys = splitKeyPath(keyPath)
+      this.transact(() => {
+        const result = []
+        for (let key in defaults) {
+          const childValue = defaults[key]
+          if (!defaults.hasOwnProperty(key)) {
+            continue
+          }
+          result.push(this.setDefaults(keys.concat([key]).join('.'), childValue))
+        }
+        return result
+      })
+    } else {
+      try {
+        defaults = this.makeValueConformToSchema(keyPath, defaults)
+        this.setRawDefault(keyPath, defaults)
+      } catch (e) {
+        console.warn(
+          `'${keyPath}' could not set the default. Attempted default: ${JSON.stringify(
+            defaults
+          )}; Schema: ${JSON.stringify(this.getSchema(keyPath))}`
+        )
+      }
+    }
+  }
+
+  extractDefaultsFromSchema(schema) {
+    if (schema.default != null) {
+      return schema.default
+    } else if (schema.type === 'object' && schema.properties != null && isPlainObject(schema.properties)) {
+      const defaults = {}
+      const properties = schema.properties || {}
+      for (let key in properties) {
+        const value = properties[key]
+        defaults[key] = this.extractDefaultsFromSchema(value)
+      }
+      return defaults
+    }
+  }
+
+  makeValueConformToSchema(keyPath, value, options) {
+    console.log('makeValueConformToSchema:', keyPath, value, JSON.stringify(options))
+    if (options != null ? options.suppressException : undefined) {
+      try {
+        return this.makeValueConformToSchema(keyPath, value)
+      } catch (e) {
+        return undefined
+      }
+    } else {
+      let schema
+      if ((schema = this.getSchema(keyPath)) == null) {
+        if (schema === false) {
+          throw new Error(`Illegal key path ${keyPath}`)
+        }
+      }
+      return this.constructor.executeSchemaEnforcers(keyPath, value, schema)
+    }
+  }
+
+  /**
+   * When the schema is changed / added, there may be values set in the config
+   * that do not conform to the schema. This will reset make them conform
+   * @type {Function}
+   * @param {String} source
+   */
+  resetSettingsForSchemaChange(source) {
+    if (source == null) {
+      source = this.mainSource
+    }
+    return this.transact(() => {
+      this.settings = this.makeValueConformToSchema(null, this.settings, { suppressException: true })
+    })
+  }
+
+  // Private: Suppress calls to handler functions registered with {::onDidChange}
+  // and {::observe} for the duration of the {Promise} returned by `callback`.
+  // After the {Promise} is either resolved or rejected, handlers will be called
+  // once if the value for their key-path has changed.
+  //
+  // * `callback` {Function} that returns a {Promise}, which will be executed
+  //   while suppressing calls to handlers.
+  //
+  // Returns a {Promise} that is either resolved or rejected according to the
+  // `{Promise}` returned by `callback`. If `callback` throws an error, a
+  // rejected {Promise} will be returned instead.
+  transactAsync(callback) {
+    let endTransaction
+    this.beginTransaction()
+    try {
+      endTransaction = fn => (...args) => {
+        this.endTransaction()
+        return fn(...args)
+      }
+      const result = callback()
+      return new Promise((resolve, reject) => {
+        return result.then(endTransaction(resolve)).catch(endTransaction(reject))
+      })
+    } catch (error) {
+      this.endTransaction()
+      return Promise.reject(error)
+    }
+  }
+
+  beginTransaction() {
+    this.transactDepth++
+  }
+
+  endTransaction() {
+    this.transactDepth--
+    this.emitChangeEvent()
+  }
+
+  // Extended: Suppress calls to handler functions registered with {::onDidChange}
+  // and {::observe} for the duration of `callback`. After `callback` executes,
+  // handlers will be called once if the value for their key-path has changed.
+  //
+  // * `callback` {Function} to execute while suppressing calls to handlers.
+  transact(callback) {
+    this.beginTransaction()
+    try {
+      return callback()
+    } finally {
+      this.endTransaction()
     }
   }
 }

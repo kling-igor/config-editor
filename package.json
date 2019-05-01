@@ -4,7 +4,8 @@
   "description": "Vision Config Editor",
   "main": "src/index.js",
   "scripts": {
-    "start": "webpack-dev-server --mode development --env.dev --hot"
+    "start": "webpack-dev-server --mode development --env.dev --hot",
+    "test": "mocha --require @babel/register --recursive src/**/test/*.spec.js"
   },
   "keywords": [],
   "author": "'Igor Kling' <\"klingiv@altarix.ru\">",
@@ -13,6 +14,7 @@
   "dependencies": {
     "@blueprintjs/core": "^3.11.0",
     "color": "^3.1.1",
+    "event-kit": "^2.5.3",
     "lodash": "^4.17.11",
     "mobx": "^5.8.0",
     "mobx-react": "^5.4.3",
@@ -33,10 +35,17 @@
     "@babel/preset-env": "^7.2.3",
     "@babel/preset-react": "^7.0.0",
     "@babel/register": "^7.0.0",
+    "@babel/runtime": "^7.4.4",
     "babel-loader": "^8.0.5",
+    "chai": "^4.2.0",
+    "chai-as-promised": "^7.1.1",
     "css-loader": "^1.0.0",
+    "deep-eql": "^4.0.0",
     "extract-text-webpack-plugin": "^3.0.2",
     "html-webpack-plugin": "^3.2.0",
+    "mocha": "^6.1.4",
+    "sinon": "^7.3.2",
+    "sinon-chai": "^3.3.0",
     "style-loader": "^0.23.0",
     "webpack": "^4.28.4",
     "webpack-cli": "^3.2.1",
