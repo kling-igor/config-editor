@@ -122,7 +122,7 @@ const deepDefaults = function(target) {
  * })
  *
  * this.config.setSchema(null, {type: 'object', properties: _.clone(ConfigSchema)})
- * this.config.resetUserSettings(userSettings)
+ * this.config.resetSettings(userSettings)
  */
 export default class Config {
   static addSchemaEnforcer(typeName, enforcerFunction) {
@@ -183,8 +183,6 @@ export default class Config {
 
     this.defaultSettings = {}
     this.settings = {}
-    this.projectSettings = {}
-    this.projectFile = null
 
     this.transactDepth = 0
     this.pendingOperations = []
@@ -365,21 +363,19 @@ export default class Config {
    * @param {Object} [options = {}]
    */
   setRawValue(keyPath, value, options = {}) {
-    const source = options.source ? options.source : undefined
-    const settingsToChange = source === this.projectFile ? 'projectSettings' : 'settings'
     const defaultValue = getValueAtKeyPath(this.defaultSettings, keyPath)
 
     if (_.isEqual(defaultValue, value)) {
       if (keyPath != null) {
-        deleteValueAtKeyPath(this[settingsToChange], keyPath)
+        deleteValueAtKeyPath(this.settings, keyPath)
       } else {
-        this[settingsToChange] = null
+        this.settings = null
       }
     } else {
       if (keyPath != null) {
-        setValueAtKeyPath(this[settingsToChange], keyPath, value)
+        setValueAtKeyPath(this.settings, keyPath, value)
       } else {
-        this[settingsToChange] = value
+        this.settings = value
       }
     }
     return this.emitChangeEvent()
@@ -395,10 +391,6 @@ export default class Config {
     let value
     if (!options.excludeSources || !options.excludeSources.includes(this.mainSource)) {
       value = getValueAtKeyPath(this.settings, keyPath)
-      if (this.projectFile != null) {
-        const projectValue = getValueAtKeyPath(this.projectSettings, keyPath)
-        value = projectValue === undefined ? value : projectValue
-      }
     }
 
     let defaultValue
@@ -565,7 +557,7 @@ export default class Config {
     })
   }
 
-  resetUserSettings(newSettings, options = {}) {
+  resetSettings(newSettings, options = {}) {
     const source = options.source
     newSettings = Object.assign({}, newSettings)
     if (newSettings.global != null) {
@@ -573,20 +565,15 @@ export default class Config {
       delete newSettings.global
     }
 
-    // if (newSettings['*'] != null) {
-    //   const scopedSettings = newSettings
-    //   newSettings = newSettings['*']
-    //   delete scopedSettings['*']
-    //   this.resetScopedSettings(scopedSettings, { source })
-    // }
-
     return this.transact(() => {
-      this._clearUnscopedSettingsForSource(source)
+      this.settings = {}
       this.settingsLoaded = true
+
       for (let key in newSettings) {
         const value = newSettings[key]
         this.set(key, value, { save: false, source })
       }
+
       if (this.pendingOperations.length) {
         for (let op of this.pendingOperations) {
           op()
@@ -594,14 +581,6 @@ export default class Config {
         this.pendingOperations = []
       }
     })
-  }
-
-  _clearUnscopedSettingsForSource(source) {
-    if (source === this.projectFile) {
-      this.projectSettings = {}
-    } else {
-      this.settings = {}
-    }
   }
 
   // Private: Suppress calls to handler functions registered with {::onDidChange}
