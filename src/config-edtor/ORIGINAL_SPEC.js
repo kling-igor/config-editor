@@ -39,7 +39,7 @@ describe('Config', () => {
     //   atom.config.setDefaults('bar', { baz: 7 })
     //   expect(atom.config.get('bar.baz')).toEqual({ a: 3 })
     // })
-
+/*
     describe("when a 'sources' option is specified", () =>
       it('only retrieves values from the specified sources', () => {
         atom.config.set('x.y', 1, { scopeSelector: '.foo', source: 'a' })
@@ -55,7 +55,10 @@ describe('Config', () => {
 
         expect(atom.config.get(null, { sources: ['a'], scope: ['.foo'] }).x.y).toBe(1)
       }))
+*/
 
+
+/*
     describe("when an 'excludeSources' option is specified", () =>
       it('only retrieves values from the specified sources', () => {
         atom.config.set('x.y', 0)
@@ -90,7 +93,9 @@ describe('Config', () => {
           })
         ).toBe(4)
       }))
+*/
 
+/*
     describe("when a 'scope' option is given", () => {
       it('returns the property with the most specific scope selector', () => {
         atom.config.set('foo.bar.baz', 42, {
@@ -118,7 +123,8 @@ describe('Config', () => {
         ).toBe(11)
         expect(atom.config.get('foo.bar.baz', { scope: ['.text'] })).toBeUndefined()
       })
-
+*/
+/*
       it('favors the most recently added properties in the event of a specificity tie', () => {
         atom.config.set('foo.bar.baz', 42, {
           scopeSelector: '.source.coffee .string.quoted.single'
@@ -138,7 +144,8 @@ describe('Config', () => {
           })
         ).toBe(22)
       })
-
+*/
+/*
       describe('when there are global defaults', () =>
         it('falls back to the global when there is no scoped property specified', () => {
           atom.config.setDefaults('foo', { hasDefault: 'ok' })
@@ -148,7 +155,8 @@ describe('Config', () => {
             })
           ).toBe('ok')
         }))
-
+*/
+/*
       describe('when package settings are added after user settings', () =>
         it("returns the user's setting because the user's setting has higher priority", () => {
           atom.config.set('foo.bar.baz', 100, {
@@ -162,7 +170,8 @@ describe('Config', () => {
         }))
     })
   })
-
+*/
+/*
   describe('.getAll(keyPath, {scope, sources, excludeSources})', () => {
     it('reads all of the values for a given key-path', () => {
       expect(atom.config.set('foo', 41)).toBe(true)
@@ -189,7 +198,8 @@ describe('Config', () => {
       ])
     })
   })
-
+*/
+/*
   describe('.set(keyPath, value, {source, scopeSelector})', () => {
     it("allows a key path's value to be written", () => {
       expect(atom.config.set('foo.bar.baz', 42)).toBe(true)
@@ -218,7 +228,8 @@ describe('Config', () => {
     it("does not allow a 'source' option without a 'scopeSelector'", () => {
       expect(() => atom.config.set('foo', 1, { source: ['.source.ruby'] })).toThrow()
     })
-
+*/
+/*
     describe('when the key-path is null', () =>
       it('sets the root object', () => {
         expect(atom.config.set(null, { editor: { tabLength: 6 } })).toBe(true)
@@ -230,58 +241,58 @@ describe('Config', () => {
         ).toBe(true)
         expect(atom.config.get('editor.tabLength', { scope: ['.source.js'] })).toBe(8)
       }))
+*/
+    // describe('when the value equals the default value', () =>
+    //   it("does not store the value in the user's config", () => {
+    //     atom.config.setSchema('foo', {
+    //       type: 'object',
+    //       properties: {
+    //         same: {
+    //           type: 'number',
+    //           default: 1
+    //         },
+    //         changes: {
+    //           type: 'number',
+    //           default: 1
+    //         },
+    //         sameArray: {
+    //           type: 'array',
+    //           default: [1, 2, 3]
+    //         },
+    //         sameObject: {
+    //           type: 'object',
+    //           default: { a: 1, b: 2 }
+    //         },
+    //         null: {
+    //           type: '*',
+    //           default: null
+    //         },
+    //         undefined: {
+    //           type: '*',
+    //           default: undefined
+    //         }
+    //       }
+    //     })
+    //     expect(atom.config.settings.foo).toBeUndefined()
 
-    describe('when the value equals the default value', () =>
-      it("does not store the value in the user's config", () => {
-        atom.config.setSchema('foo', {
-          type: 'object',
-          properties: {
-            same: {
-              type: 'number',
-              default: 1
-            },
-            changes: {
-              type: 'number',
-              default: 1
-            },
-            sameArray: {
-              type: 'array',
-              default: [1, 2, 3]
-            },
-            sameObject: {
-              type: 'object',
-              default: { a: 1, b: 2 }
-            },
-            null: {
-              type: '*',
-              default: null
-            },
-            undefined: {
-              type: '*',
-              default: undefined
-            }
-          }
-        })
-        expect(atom.config.settings.foo).toBeUndefined()
+    //     atom.config.set('foo.same', 1)
+    //     atom.config.set('foo.changes', 2)
+    //     atom.config.set('foo.sameArray', [1, 2, 3])
+    //     atom.config.set('foo.null', undefined)
+    //     atom.config.set('foo.undefined', null)
+    //     atom.config.set('foo.sameObject', { b: 2, a: 1 })
 
-        atom.config.set('foo.same', 1)
-        atom.config.set('foo.changes', 2)
-        atom.config.set('foo.sameArray', [1, 2, 3])
-        atom.config.set('foo.null', undefined)
-        atom.config.set('foo.undefined', null)
-        atom.config.set('foo.sameObject', { b: 2, a: 1 })
+    //     const userConfigPath = atom.config.getUserConfigPath()
 
-        const userConfigPath = atom.config.getUserConfigPath()
+    //     expect(atom.config.get('foo.same', { sources: [userConfigPath] })).toBeUndefined()
 
-        expect(atom.config.get('foo.same', { sources: [userConfigPath] })).toBeUndefined()
+    //     expect(atom.config.get('foo.changes')).toBe(2)
+    //     expect(atom.config.get('foo.changes', { sources: [userConfigPath] })).toBe(2)
 
-        expect(atom.config.get('foo.changes')).toBe(2)
-        expect(atom.config.get('foo.changes', { sources: [userConfigPath] })).toBe(2)
-
-        atom.config.set('foo.changes', 1)
-        expect(atom.config.get('foo.changes', { sources: [userConfigPath] })).toBeUndefined()
-      }))
-
+    //     atom.config.set('foo.changes', 1)
+    //     expect(atom.config.get('foo.changes', { sources: [userConfigPath] })).toBeUndefined()
+    //   }))
+/*
     describe("when a 'scopeSelector' is given", () =>
       it('sets the value and overrides the others', () => {
         atom.config.set('foo.bar.baz', 42, {
@@ -310,7 +321,8 @@ describe('Config', () => {
         ).toBe(100)
       }))
   })
-
+*/
+/*
   describe('.unset(keyPath, {source, scopeSelector})', () => {
     beforeEach(() =>
       atom.config.setSchema('foo', {
@@ -563,7 +575,7 @@ describe('Config', () => {
       })
     })
   })
-
+*/
   describe('.onDidChange(keyPath, {scope})', () => {
     let observeHandler = []
 
@@ -1468,605 +1480,605 @@ describe('Config', () => {
       })
     })
 
-    describe('when the value has an "integer" type', () => {
-      beforeEach(() => {
-        const schema = {
-          type: 'integer',
-          default: 12
-        }
-        atom.config.setSchema('foo.bar.anInt', schema)
-      })
-
-      it('coerces a string to an int', () => {
-        atom.config.set('foo.bar.anInt', '123')
-        expect(atom.config.get('foo.bar.anInt')).toBe(123)
-      })
-
-      it('does not allow infinity', () => {
-        atom.config.set('foo.bar.anInt', Infinity)
-        expect(atom.config.get('foo.bar.anInt')).toBe(12)
-      })
-
-      it('coerces a float to an int', () => {
-        atom.config.set('foo.bar.anInt', 12.3)
-        expect(atom.config.get('foo.bar.anInt')).toBe(12)
-      })
-
-      it('will not set non-integers', () => {
-        atom.config.set('foo.bar.anInt', null)
-        expect(atom.config.get('foo.bar.anInt')).toBe(12)
-
-        atom.config.set('foo.bar.anInt', 'nope')
-        expect(atom.config.get('foo.bar.anInt')).toBe(12)
-      })
-
-      describe('when the minimum and maximum keys are used', () => {
-        beforeEach(() => {
-          const schema = {
-            type: 'integer',
-            minimum: 10,
-            maximum: 20,
-            default: 12
-          }
-          atom.config.setSchema('foo.bar.anInt', schema)
-        })
-
-        it('keeps the specified value within the specified range', () => {
-          atom.config.set('foo.bar.anInt', '123')
-          expect(atom.config.get('foo.bar.anInt')).toBe(20)
-
-          atom.config.set('foo.bar.anInt', '1')
-          expect(atom.config.get('foo.bar.anInt')).toBe(10)
-        })
-      })
-    })
-
-    describe('when the value has an "integer" and "string" type', () => {
-      beforeEach(() => {
-        const schema = {
-          type: ['integer', 'string'],
-          default: 12
-        }
-        atom.config.setSchema('foo.bar.anInt', schema)
-      })
-
-      it('can coerce an int, and fallback to a string', () => {
-        atom.config.set('foo.bar.anInt', '123')
-        expect(atom.config.get('foo.bar.anInt')).toBe(123)
-
-        atom.config.set('foo.bar.anInt', 'cats')
-        expect(atom.config.get('foo.bar.anInt')).toBe('cats')
-      })
-    })
-
-    describe('when the value has an "string" and "boolean" type', () => {
-      beforeEach(() => {
-        const schema = {
-          type: ['string', 'boolean'],
-          default: 'def'
-        }
-        atom.config.setSchema('foo.bar', schema)
-      })
-
-      it('can set a string, a boolean, and revert back to the default', () => {
-        atom.config.set('foo.bar', 'ok')
-        expect(atom.config.get('foo.bar')).toBe('ok')
-
-        atom.config.set('foo.bar', false)
-        expect(atom.config.get('foo.bar')).toBe(false)
-
-        atom.config.set('foo.bar', undefined)
-        expect(atom.config.get('foo.bar')).toBe('def')
-      })
-    })
-
-    describe('when the value has a "number" type', () => {
-      beforeEach(() => {
-        const schema = {
-          type: 'number',
-          default: 12.1
-        }
-        atom.config.setSchema('foo.bar.aFloat', schema)
-      })
-
-      it('coerces a string to a float', () => {
-        atom.config.set('foo.bar.aFloat', '12.23')
-        expect(atom.config.get('foo.bar.aFloat')).toBe(12.23)
-      })
-
-      it('will not set non-numbers', () => {
-        atom.config.set('foo.bar.aFloat', null)
-        expect(atom.config.get('foo.bar.aFloat')).toBe(12.1)
-
-        atom.config.set('foo.bar.aFloat', 'nope')
-        expect(atom.config.get('foo.bar.aFloat')).toBe(12.1)
-      })
-
-      describe('when the minimum and maximum keys are used', () => {
-        beforeEach(() => {
-          const schema = {
-            type: 'number',
-            minimum: 11.2,
-            maximum: 25.4,
-            default: 12.1
-          }
-          atom.config.setSchema('foo.bar.aFloat', schema)
-        })
-
-        it('keeps the specified value within the specified range', () => {
-          atom.config.set('foo.bar.aFloat', '123.2')
-          expect(atom.config.get('foo.bar.aFloat')).toBe(25.4)
-
-          atom.config.set('foo.bar.aFloat', '1.0')
-          expect(atom.config.get('foo.bar.aFloat')).toBe(11.2)
-        })
-      })
-    })
-
-    describe('when the value has a "boolean" type', () => {
-      beforeEach(() => {
-        const schema = {
-          type: 'boolean',
-          default: true
-        }
-        atom.config.setSchema('foo.bar.aBool', schema)
-      })
-
-      it('coerces various types to a boolean', () => {
-        atom.config.set('foo.bar.aBool', 'true')
-        expect(atom.config.get('foo.bar.aBool')).toBe(true)
-        atom.config.set('foo.bar.aBool', 'false')
-        expect(atom.config.get('foo.bar.aBool')).toBe(false)
-        atom.config.set('foo.bar.aBool', 'TRUE')
-        expect(atom.config.get('foo.bar.aBool')).toBe(true)
-        atom.config.set('foo.bar.aBool', 'FALSE')
-        expect(atom.config.get('foo.bar.aBool')).toBe(false)
-        atom.config.set('foo.bar.aBool', 1)
-        expect(atom.config.get('foo.bar.aBool')).toBe(false)
-        atom.config.set('foo.bar.aBool', 0)
-        expect(atom.config.get('foo.bar.aBool')).toBe(false)
-        atom.config.set('foo.bar.aBool', {})
-        expect(atom.config.get('foo.bar.aBool')).toBe(false)
-        atom.config.set('foo.bar.aBool', null)
-        expect(atom.config.get('foo.bar.aBool')).toBe(false)
-      })
-
-      it('reverts back to the default value when undefined is passed to set', () => {
-        atom.config.set('foo.bar.aBool', 'false')
-        expect(atom.config.get('foo.bar.aBool')).toBe(false)
-
-        atom.config.set('foo.bar.aBool', undefined)
-        expect(atom.config.get('foo.bar.aBool')).toBe(true)
-      })
-    })
-
-    describe('when the value has an "string" type', () => {
-      beforeEach(() => {
-        const schema = {
-          type: 'string',
-          default: 'ok'
-        }
-        atom.config.setSchema('foo.bar.aString', schema)
-      })
-
-      it('allows strings', () => {
-        atom.config.set('foo.bar.aString', 'yep')
-        expect(atom.config.get('foo.bar.aString')).toBe('yep')
-      })
-
-      it('will only set strings', () => {
-        expect(atom.config.set('foo.bar.aString', 123)).toBe(false)
-        expect(atom.config.get('foo.bar.aString')).toBe('ok')
-
-        expect(atom.config.set('foo.bar.aString', true)).toBe(false)
-        expect(atom.config.get('foo.bar.aString')).toBe('ok')
-
-        expect(atom.config.set('foo.bar.aString', null)).toBe(false)
-        expect(atom.config.get('foo.bar.aString')).toBe('ok')
-
-        expect(atom.config.set('foo.bar.aString', [])).toBe(false)
-        expect(atom.config.get('foo.bar.aString')).toBe('ok')
-
-        expect(atom.config.set('foo.bar.aString', { nope: 'nope' })).toBe(false)
-        expect(atom.config.get('foo.bar.aString')).toBe('ok')
-      })
-
-      it('does not allow setting children of that key-path', () => {
-        expect(atom.config.set('foo.bar.aString.something', 123)).toBe(false)
-        expect(atom.config.get('foo.bar.aString')).toBe('ok')
-      })
-
-      describe('when the schema has a "maximumLength" key', () =>
-        it('trims the string to be no longer than the specified maximum', () => {
-          const schema = {
-            type: 'string',
-            default: 'ok',
-            maximumLength: 3
-          }
-          atom.config.setSchema('foo.bar.aString', schema)
-          atom.config.set('foo.bar.aString', 'abcdefg')
-          expect(atom.config.get('foo.bar.aString')).toBe('abc')
-        }))
-    })
-
-    describe('when the value has an "object" type', () => {
-      beforeEach(() => {
-        const schema = {
-          type: 'object',
-          properties: {
-            anInt: {
-              type: 'integer',
-              default: 12
-            },
-            nestedObject: {
-              type: 'object',
-              properties: {
-                nestedBool: {
-                  type: 'boolean',
-                  default: false
-                }
-              }
-            }
-          }
-        }
-        atom.config.setSchema('foo.bar', schema)
-      })
-
-      it('converts and validates all the children', () => {
-        atom.config.set('foo.bar', {
-          anInt: '23',
-          nestedObject: {
-            nestedBool: 'true'
-          }
-        })
-        expect(atom.config.get('foo.bar')).toEqual({
-          anInt: 23,
-          nestedObject: {
-            nestedBool: true
-          }
-        })
-      })
-
-      it('will set only the values that adhere to the schema', () => {
-        expect(
-          atom.config.set('foo.bar', {
-            anInt: 'nope',
-            nestedObject: {
-              nestedBool: true
-            }
-          })
-        ).toBe(true)
-        expect(atom.config.get('foo.bar.anInt')).toEqual(12)
-        expect(atom.config.get('foo.bar.nestedObject.nestedBool')).toEqual(true)
-      })
-
-      describe('when the value has additionalProperties set to false', () =>
-        it('does not allow other properties to be set on the object', () => {
-          atom.config.setSchema('foo.bar', {
-            type: 'object',
-            properties: {
-              anInt: {
-                type: 'integer',
-                default: 12
-              }
-            },
-            additionalProperties: false
-          })
-
-          expect(atom.config.set('foo.bar', { anInt: 5, somethingElse: 'ok' })).toBe(true)
-          expect(atom.config.get('foo.bar.anInt')).toBe(5)
-          expect(atom.config.get('foo.bar.somethingElse')).toBeUndefined()
-
-          expect(atom.config.set('foo.bar.somethingElse', { anInt: 5 })).toBe(false)
-          expect(atom.config.get('foo.bar.somethingElse')).toBeUndefined()
-        }))
-
-      describe('when the value has an additionalProperties schema', () =>
-        it('validates properties of the object against that schema', () => {
-          atom.config.setSchema('foo.bar', {
-            type: 'object',
-            properties: {
-              anInt: {
-                type: 'integer',
-                default: 12
-              }
-            },
-            additionalProperties: {
-              type: 'string'
-            }
-          })
-
-          expect(atom.config.set('foo.bar', { anInt: 5, somethingElse: 'ok' })).toBe(true)
-          expect(atom.config.get('foo.bar.anInt')).toBe(5)
-          expect(atom.config.get('foo.bar.somethingElse')).toBe('ok')
-
-          expect(atom.config.set('foo.bar.somethingElse', 7)).toBe(false)
-          expect(atom.config.get('foo.bar.somethingElse')).toBe('ok')
-
-          expect(atom.config.set('foo.bar', { anInt: 6, somethingElse: 7 })).toBe(true)
-          expect(atom.config.get('foo.bar.anInt')).toBe(6)
-          expect(atom.config.get('foo.bar.somethingElse')).toBe(undefined)
-        }))
-    })
-
-    describe('when the value has an "array" type', () => {
-      beforeEach(() => {
-        const schema = {
-          type: 'array',
-          default: [1, 2, 3],
-          items: {
-            type: 'integer'
-          }
-        }
-        atom.config.setSchema('foo.bar', schema)
-      })
-
-      it('converts an array of strings to an array of ints', () => {
-        atom.config.set('foo.bar', ['2', '3', '4'])
-        expect(atom.config.get('foo.bar')).toEqual([2, 3, 4])
-      })
-
-      it('does not allow setting children of that key-path', () => {
-        expect(atom.config.set('foo.bar.child', 123)).toBe(false)
-        expect(atom.config.set('foo.bar.child.grandchild', 123)).toBe(false)
-        expect(atom.config.get('foo.bar')).toEqual([1, 2, 3])
-      })
-    })
-
-    describe('when the value has a "color" type', () => {
-      beforeEach(() => {
-        const schema = {
-          type: 'color',
-          default: 'white'
-        }
-        atom.config.setSchema('foo.bar.aColor', schema)
-      })
-
-      it('returns a Color object', () => {
-        let color = atom.config.get('foo.bar.aColor')
-        expect(color.toHexString()).toBe('#ffffff')
-        expect(color.toRGBAString()).toBe('rgba(255, 255, 255, 1)')
-
-        color.red = 0
-        color.green = 0
-        color.blue = 0
-        color.alpha = 0
-        atom.config.set('foo.bar.aColor', color)
-
-        color = atom.config.get('foo.bar.aColor')
-        expect(color.toHexString()).toBe('#000000')
-        expect(color.toRGBAString()).toBe('rgba(0, 0, 0, 0)')
-
-        color.red = 300
-        color.green = -200
-        color.blue = -1
-        color.alpha = 'not see through'
-        atom.config.set('foo.bar.aColor', color)
-
-        color = atom.config.get('foo.bar.aColor')
-        expect(color.toHexString()).toBe('#ff0000')
-        expect(color.toRGBAString()).toBe('rgba(255, 0, 0, 1)')
-
-        color.red = 11
-        color.green = 11
-        color.blue = 124
-        color.alpha = 1
-        atom.config.set('foo.bar.aColor', color)
-
-        color = atom.config.get('foo.bar.aColor')
-        expect(color.toHexString()).toBe('#0b0b7c')
-        expect(color.toRGBAString()).toBe('rgba(11, 11, 124, 1)')
-      })
-
-      it('coerces various types to a color object', () => {
-        atom.config.set('foo.bar.aColor', 'red')
-        expect(atom.config.get('foo.bar.aColor')).toEqual({
-          red: 255,
-          green: 0,
-          blue: 0,
-          alpha: 1
-        })
-        atom.config.set('foo.bar.aColor', '#020')
-        expect(atom.config.get('foo.bar.aColor')).toEqual({
-          red: 0,
-          green: 34,
-          blue: 0,
-          alpha: 1
-        })
-        atom.config.set('foo.bar.aColor', '#abcdef')
-        expect(atom.config.get('foo.bar.aColor')).toEqual({
-          red: 171,
-          green: 205,
-          blue: 239,
-          alpha: 1
-        })
-        atom.config.set('foo.bar.aColor', 'rgb(1,2,3)')
-        expect(atom.config.get('foo.bar.aColor')).toEqual({
-          red: 1,
-          green: 2,
-          blue: 3,
-          alpha: 1
-        })
-        atom.config.set('foo.bar.aColor', 'rgba(4,5,6,.7)')
-        expect(atom.config.get('foo.bar.aColor')).toEqual({
-          red: 4,
-          green: 5,
-          blue: 6,
-          alpha: 0.7
-        })
-        atom.config.set('foo.bar.aColor', 'hsl(120,100%,50%)')
-        expect(atom.config.get('foo.bar.aColor')).toEqual({
-          red: 0,
-          green: 255,
-          blue: 0,
-          alpha: 1
-        })
-        atom.config.set('foo.bar.aColor', 'hsla(120,100%,50%,0.3)')
-        expect(atom.config.get('foo.bar.aColor')).toEqual({
-          red: 0,
-          green: 255,
-          blue: 0,
-          alpha: 0.3
-        })
-        atom.config.set('foo.bar.aColor', {
-          red: 100,
-          green: 255,
-          blue: 2,
-          alpha: 0.5
-        })
-        expect(atom.config.get('foo.bar.aColor')).toEqual({
-          red: 100,
-          green: 255,
-          blue: 2,
-          alpha: 0.5
-        })
-        atom.config.set('foo.bar.aColor', { red: 255 })
-        expect(atom.config.get('foo.bar.aColor')).toEqual({
-          red: 255,
-          green: 0,
-          blue: 0,
-          alpha: 1
-        })
-        atom.config.set('foo.bar.aColor', { red: 1000 })
-        expect(atom.config.get('foo.bar.aColor')).toEqual({
-          red: 255,
-          green: 0,
-          blue: 0,
-          alpha: 1
-        })
-        atom.config.set('foo.bar.aColor', { red: 'dark' })
-        expect(atom.config.get('foo.bar.aColor')).toEqual({
-          red: 0,
-          green: 0,
-          blue: 0,
-          alpha: 1
-        })
-      })
-
-      it('reverts back to the default value when undefined is passed to set', () => {
-        atom.config.set('foo.bar.aColor', undefined)
-        expect(atom.config.get('foo.bar.aColor')).toEqual({
-          red: 255,
-          green: 255,
-          blue: 255,
-          alpha: 1
-        })
-      })
-
-      it('will not set non-colors', () => {
-        atom.config.set('foo.bar.aColor', null)
-        expect(atom.config.get('foo.bar.aColor')).toEqual({
-          red: 255,
-          green: 255,
-          blue: 255,
-          alpha: 1
-        })
-
-        atom.config.set('foo.bar.aColor', 'nope')
-        expect(atom.config.get('foo.bar.aColor')).toEqual({
-          red: 255,
-          green: 255,
-          blue: 255,
-          alpha: 1
-        })
-
-        atom.config.set('foo.bar.aColor', 30)
-        expect(atom.config.get('foo.bar.aColor')).toEqual({
-          red: 255,
-          green: 255,
-          blue: 255,
-          alpha: 1
-        })
-
-        atom.config.set('foo.bar.aColor', false)
-        expect(atom.config.get('foo.bar.aColor')).toEqual({
-          red: 255,
-          green: 255,
-          blue: 255,
-          alpha: 1
-        })
-      })
-
-      it('returns a clone of the Color when returned in a parent object', () => {
-        const color1 = atom.config.get('foo.bar').aColor
-        const color2 = atom.config.get('foo.bar').aColor
-        expect(color1.toRGBAString()).toBe('rgba(255, 255, 255, 1)')
-        expect(color2.toRGBAString()).toBe('rgba(255, 255, 255, 1)')
-        expect(color1).not.toBe(color2)
-        expect(color1).toEqual(color2)
-      })
-    })
-
-    describe('when the `enum` key is used', () => {
-      beforeEach(() => {
-        const schema = {
-          type: 'object',
-          properties: {
-            str: {
-              type: 'string',
-              default: 'ok',
-              enum: ['ok', 'one', 'two']
-            },
-            int: {
-              type: 'integer',
-              default: 2,
-              enum: [2, 3, 5]
-            },
-            arr: {
-              type: 'array',
-              default: ['one', 'two'],
-              items: {
-                type: 'string',
-                enum: ['one', 'two', 'three']
-              }
-            },
-            str_options: {
-              type: 'string',
-              default: 'one',
-              enum: [{ value: 'one', description: 'One' }, 'two', { value: 'three', description: 'Three' }]
-            }
-          }
-        }
-
-        atom.config.setSchema('foo.bar', schema)
-      })
-
-      it('will only set a string when the string is in the enum values', () => {
-        expect(atom.config.set('foo.bar.str', 'nope')).toBe(false)
-        expect(atom.config.get('foo.bar.str')).toBe('ok')
-
-        expect(atom.config.set('foo.bar.str', 'one')).toBe(true)
-        expect(atom.config.get('foo.bar.str')).toBe('one')
-      })
-
-      it('will only set an integer when the integer is in the enum values', () => {
-        expect(atom.config.set('foo.bar.int', '400')).toBe(false)
-        expect(atom.config.get('foo.bar.int')).toBe(2)
-
-        expect(atom.config.set('foo.bar.int', '3')).toBe(true)
-        expect(atom.config.get('foo.bar.int')).toBe(3)
-      })
-
-      it('will only set an array when the array values are in the enum values', () => {
-        expect(atom.config.set('foo.bar.arr', ['one', 'five'])).toBe(true)
-        expect(atom.config.get('foo.bar.arr')).toEqual(['one'])
-
-        expect(atom.config.set('foo.bar.arr', ['two', 'three'])).toBe(true)
-        expect(atom.config.get('foo.bar.arr')).toEqual(['two', 'three'])
-      })
-
-      it('will honor the enum when specified as an array', () => {
-        expect(atom.config.set('foo.bar.str_options', 'one')).toBe(true)
-        expect(atom.config.get('foo.bar.str_options')).toEqual('one')
-
-        expect(atom.config.set('foo.bar.str_options', 'two')).toBe(true)
-        expect(atom.config.get('foo.bar.str_options')).toEqual('two')
-
-        expect(atom.config.set('foo.bar.str_options', 'One')).toBe(false)
-        expect(atom.config.get('foo.bar.str_options')).toEqual('two')
-      })
-    })
-  })
+  //   describe('when the value has an "integer" type', () => {
+  //     beforeEach(() => {
+  //       const schema = {
+  //         type: 'integer',
+  //         default: 12
+  //       }
+  //       atom.config.setSchema('foo.bar.anInt', schema)
+  //     })
+
+  //     it('coerces a string to an int', () => {
+  //       atom.config.set('foo.bar.anInt', '123')
+  //       expect(atom.config.get('foo.bar.anInt')).toBe(123)
+  //     })
+
+  //     it('does not allow infinity', () => {
+  //       atom.config.set('foo.bar.anInt', Infinity)
+  //       expect(atom.config.get('foo.bar.anInt')).toBe(12)
+  //     })
+
+  //     it('coerces a float to an int', () => {
+  //       atom.config.set('foo.bar.anInt', 12.3)
+  //       expect(atom.config.get('foo.bar.anInt')).toBe(12)
+  //     })
+
+  //     it('will not set non-integers', () => {
+  //       atom.config.set('foo.bar.anInt', null)
+  //       expect(atom.config.get('foo.bar.anInt')).toBe(12)
+
+  //       atom.config.set('foo.bar.anInt', 'nope')
+  //       expect(atom.config.get('foo.bar.anInt')).toBe(12)
+  //     })
+
+  //     describe('when the minimum and maximum keys are used', () => {
+  //       beforeEach(() => {
+  //         const schema = {
+  //           type: 'integer',
+  //           minimum: 10,
+  //           maximum: 20,
+  //           default: 12
+  //         }
+  //         atom.config.setSchema('foo.bar.anInt', schema)
+  //       })
+
+  //       it('keeps the specified value within the specified range', () => {
+  //         atom.config.set('foo.bar.anInt', '123')
+  //         expect(atom.config.get('foo.bar.anInt')).toBe(20)
+
+  //         atom.config.set('foo.bar.anInt', '1')
+  //         expect(atom.config.get('foo.bar.anInt')).toBe(10)
+  //       })
+  //     })
+  //   })
+
+  //   describe('when the value has an "integer" and "string" type', () => {
+  //     beforeEach(() => {
+  //       const schema = {
+  //         type: ['integer', 'string'],
+  //         default: 12
+  //       }
+  //       atom.config.setSchema('foo.bar.anInt', schema)
+  //     })
+
+  //     it('can coerce an int, and fallback to a string', () => {
+  //       atom.config.set('foo.bar.anInt', '123')
+  //       expect(atom.config.get('foo.bar.anInt')).toBe(123)
+
+  //       atom.config.set('foo.bar.anInt', 'cats')
+  //       expect(atom.config.get('foo.bar.anInt')).toBe('cats')
+  //     })
+  //   })
+
+  //   describe('when the value has an "string" and "boolean" type', () => {
+  //     beforeEach(() => {
+  //       const schema = {
+  //         type: ['string', 'boolean'],
+  //         default: 'def'
+  //       }
+  //       atom.config.setSchema('foo.bar', schema)
+  //     })
+
+  //     it('can set a string, a boolean, and revert back to the default', () => {
+  //       atom.config.set('foo.bar', 'ok')
+  //       expect(atom.config.get('foo.bar')).toBe('ok')
+
+  //       atom.config.set('foo.bar', false)
+  //       expect(atom.config.get('foo.bar')).toBe(false)
+
+  //       atom.config.set('foo.bar', undefined)
+  //       expect(atom.config.get('foo.bar')).toBe('def')
+  //     })
+  //   })
+
+  //   describe('when the value has a "number" type', () => {
+  //     beforeEach(() => {
+  //       const schema = {
+  //         type: 'number',
+  //         default: 12.1
+  //       }
+  //       atom.config.setSchema('foo.bar.aFloat', schema)
+  //     })
+
+  //     it('coerces a string to a float', () => {
+  //       atom.config.set('foo.bar.aFloat', '12.23')
+  //       expect(atom.config.get('foo.bar.aFloat')).toBe(12.23)
+  //     })
+
+  //     it('will not set non-numbers', () => {
+  //       atom.config.set('foo.bar.aFloat', null)
+  //       expect(atom.config.get('foo.bar.aFloat')).toBe(12.1)
+
+  //       atom.config.set('foo.bar.aFloat', 'nope')
+  //       expect(atom.config.get('foo.bar.aFloat')).toBe(12.1)
+  //     })
+
+  //     describe('when the minimum and maximum keys are used', () => {
+  //       beforeEach(() => {
+  //         const schema = {
+  //           type: 'number',
+  //           minimum: 11.2,
+  //           maximum: 25.4,
+  //           default: 12.1
+  //         }
+  //         atom.config.setSchema('foo.bar.aFloat', schema)
+  //       })
+
+  //       it('keeps the specified value within the specified range', () => {
+  //         atom.config.set('foo.bar.aFloat', '123.2')
+  //         expect(atom.config.get('foo.bar.aFloat')).toBe(25.4)
+
+  //         atom.config.set('foo.bar.aFloat', '1.0')
+  //         expect(atom.config.get('foo.bar.aFloat')).toBe(11.2)
+  //       })
+  //     })
+  //   })
+
+  //   describe('when the value has a "boolean" type', () => {
+  //     beforeEach(() => {
+  //       const schema = {
+  //         type: 'boolean',
+  //         default: true
+  //       }
+  //       atom.config.setSchema('foo.bar.aBool', schema)
+  //     })
+
+  //     it('coerces various types to a boolean', () => {
+  //       atom.config.set('foo.bar.aBool', 'true')
+  //       expect(atom.config.get('foo.bar.aBool')).toBe(true)
+  //       atom.config.set('foo.bar.aBool', 'false')
+  //       expect(atom.config.get('foo.bar.aBool')).toBe(false)
+  //       atom.config.set('foo.bar.aBool', 'TRUE')
+  //       expect(atom.config.get('foo.bar.aBool')).toBe(true)
+  //       atom.config.set('foo.bar.aBool', 'FALSE')
+  //       expect(atom.config.get('foo.bar.aBool')).toBe(false)
+  //       atom.config.set('foo.bar.aBool', 1)
+  //       expect(atom.config.get('foo.bar.aBool')).toBe(false)
+  //       atom.config.set('foo.bar.aBool', 0)
+  //       expect(atom.config.get('foo.bar.aBool')).toBe(false)
+  //       atom.config.set('foo.bar.aBool', {})
+  //       expect(atom.config.get('foo.bar.aBool')).toBe(false)
+  //       atom.config.set('foo.bar.aBool', null)
+  //       expect(atom.config.get('foo.bar.aBool')).toBe(false)
+  //     })
+
+  //     it('reverts back to the default value when undefined is passed to set', () => {
+  //       atom.config.set('foo.bar.aBool', 'false')
+  //       expect(atom.config.get('foo.bar.aBool')).toBe(false)
+
+  //       atom.config.set('foo.bar.aBool', undefined)
+  //       expect(atom.config.get('foo.bar.aBool')).toBe(true)
+  //     })
+  //   })
+
+  //   describe('when the value has an "string" type', () => {
+  //     beforeEach(() => {
+  //       const schema = {
+  //         type: 'string',
+  //         default: 'ok'
+  //       }
+  //       atom.config.setSchema('foo.bar.aString', schema)
+  //     })
+
+  //     it('allows strings', () => {
+  //       atom.config.set('foo.bar.aString', 'yep')
+  //       expect(atom.config.get('foo.bar.aString')).toBe('yep')
+  //     })
+
+  //     it('will only set strings', () => {
+  //       expect(atom.config.set('foo.bar.aString', 123)).toBe(false)
+  //       expect(atom.config.get('foo.bar.aString')).toBe('ok')
+
+  //       expect(atom.config.set('foo.bar.aString', true)).toBe(false)
+  //       expect(atom.config.get('foo.bar.aString')).toBe('ok')
+
+  //       expect(atom.config.set('foo.bar.aString', null)).toBe(false)
+  //       expect(atom.config.get('foo.bar.aString')).toBe('ok')
+
+  //       expect(atom.config.set('foo.bar.aString', [])).toBe(false)
+  //       expect(atom.config.get('foo.bar.aString')).toBe('ok')
+
+  //       expect(atom.config.set('foo.bar.aString', { nope: 'nope' })).toBe(false)
+  //       expect(atom.config.get('foo.bar.aString')).toBe('ok')
+  //     })
+
+  //     it('does not allow setting children of that key-path', () => {
+  //       expect(atom.config.set('foo.bar.aString.something', 123)).toBe(false)
+  //       expect(atom.config.get('foo.bar.aString')).toBe('ok')
+  //     })
+
+  //     describe('when the schema has a "maximumLength" key', () =>
+  //       it('trims the string to be no longer than the specified maximum', () => {
+  //         const schema = {
+  //           type: 'string',
+  //           default: 'ok',
+  //           maximumLength: 3
+  //         }
+  //         atom.config.setSchema('foo.bar.aString', schema)
+  //         atom.config.set('foo.bar.aString', 'abcdefg')
+  //         expect(atom.config.get('foo.bar.aString')).toBe('abc')
+  //       }))
+  //   })
+
+  //   describe('when the value has an "object" type', () => {
+  //     beforeEach(() => {
+  //       const schema = {
+  //         type: 'object',
+  //         properties: {
+  //           anInt: {
+  //             type: 'integer',
+  //             default: 12
+  //           },
+  //           nestedObject: {
+  //             type: 'object',
+  //             properties: {
+  //               nestedBool: {
+  //                 type: 'boolean',
+  //                 default: false
+  //               }
+  //             }
+  //           }
+  //         }
+  //       }
+  //       atom.config.setSchema('foo.bar', schema)
+  //     })
+
+  //     it('converts and validates all the children', () => {
+  //       atom.config.set('foo.bar', {
+  //         anInt: '23',
+  //         nestedObject: {
+  //           nestedBool: 'true'
+  //         }
+  //       })
+  //       expect(atom.config.get('foo.bar')).toEqual({
+  //         anInt: 23,
+  //         nestedObject: {
+  //           nestedBool: true
+  //         }
+  //       })
+  //     })
+
+  //     it('will set only the values that adhere to the schema', () => {
+  //       expect(
+  //         atom.config.set('foo.bar', {
+  //           anInt: 'nope',
+  //           nestedObject: {
+  //             nestedBool: true
+  //           }
+  //         })
+  //       ).toBe(true)
+  //       expect(atom.config.get('foo.bar.anInt')).toEqual(12)
+  //       expect(atom.config.get('foo.bar.nestedObject.nestedBool')).toEqual(true)
+  //     })
+
+  //     describe('when the value has additionalProperties set to false', () =>
+  //       it('does not allow other properties to be set on the object', () => {
+  //         atom.config.setSchema('foo.bar', {
+  //           type: 'object',
+  //           properties: {
+  //             anInt: {
+  //               type: 'integer',
+  //               default: 12
+  //             }
+  //           },
+  //           additionalProperties: false
+  //         })
+
+  //         expect(atom.config.set('foo.bar', { anInt: 5, somethingElse: 'ok' })).toBe(true)
+  //         expect(atom.config.get('foo.bar.anInt')).toBe(5)
+  //         expect(atom.config.get('foo.bar.somethingElse')).toBeUndefined()
+
+  //         expect(atom.config.set('foo.bar.somethingElse', { anInt: 5 })).toBe(false)
+  //         expect(atom.config.get('foo.bar.somethingElse')).toBeUndefined()
+  //       }))
+
+  //     describe('when the value has an additionalProperties schema', () =>
+  //       it('validates properties of the object against that schema', () => {
+  //         atom.config.setSchema('foo.bar', {
+  //           type: 'object',
+  //           properties: {
+  //             anInt: {
+  //               type: 'integer',
+  //               default: 12
+  //             }
+  //           },
+  //           additionalProperties: {
+  //             type: 'string'
+  //           }
+  //         })
+
+  //         expect(atom.config.set('foo.bar', { anInt: 5, somethingElse: 'ok' })).toBe(true)
+  //         expect(atom.config.get('foo.bar.anInt')).toBe(5)
+  //         expect(atom.config.get('foo.bar.somethingElse')).toBe('ok')
+
+  //         expect(atom.config.set('foo.bar.somethingElse', 7)).toBe(false)
+  //         expect(atom.config.get('foo.bar.somethingElse')).toBe('ok')
+
+  //         expect(atom.config.set('foo.bar', { anInt: 6, somethingElse: 7 })).toBe(true)
+  //         expect(atom.config.get('foo.bar.anInt')).toBe(6)
+  //         expect(atom.config.get('foo.bar.somethingElse')).toBe(undefined)
+  //       }))
+  //   })
+
+  //   describe('when the value has an "array" type', () => {
+  //     beforeEach(() => {
+  //       const schema = {
+  //         type: 'array',
+  //         default: [1, 2, 3],
+  //         items: {
+  //           type: 'integer'
+  //         }
+  //       }
+  //       atom.config.setSchema('foo.bar', schema)
+  //     })
+
+  //     it('converts an array of strings to an array of ints', () => {
+  //       atom.config.set('foo.bar', ['2', '3', '4'])
+  //       expect(atom.config.get('foo.bar')).toEqual([2, 3, 4])
+  //     })
+
+  //     it('does not allow setting children of that key-path', () => {
+  //       expect(atom.config.set('foo.bar.child', 123)).toBe(false)
+  //       expect(atom.config.set('foo.bar.child.grandchild', 123)).toBe(false)
+  //       expect(atom.config.get('foo.bar')).toEqual([1, 2, 3])
+  //     })
+  //   })
+
+  //   describe('when the value has a "color" type', () => {
+  //     beforeEach(() => {
+  //       const schema = {
+  //         type: 'color',
+  //         default: 'white'
+  //       }
+  //       atom.config.setSchema('foo.bar.aColor', schema)
+  //     })
+
+  //     it('returns a Color object', () => {
+  //       let color = atom.config.get('foo.bar.aColor')
+  //       expect(color.toHexString()).toBe('#ffffff')
+  //       expect(color.toRGBAString()).toBe('rgba(255, 255, 255, 1)')
+
+  //       color.red = 0
+  //       color.green = 0
+  //       color.blue = 0
+  //       color.alpha = 0
+  //       atom.config.set('foo.bar.aColor', color)
+
+  //       color = atom.config.get('foo.bar.aColor')
+  //       expect(color.toHexString()).toBe('#000000')
+  //       expect(color.toRGBAString()).toBe('rgba(0, 0, 0, 0)')
+
+  //       color.red = 300
+  //       color.green = -200
+  //       color.blue = -1
+  //       color.alpha = 'not see through'
+  //       atom.config.set('foo.bar.aColor', color)
+
+  //       color = atom.config.get('foo.bar.aColor')
+  //       expect(color.toHexString()).toBe('#ff0000')
+  //       expect(color.toRGBAString()).toBe('rgba(255, 0, 0, 1)')
+
+  //       color.red = 11
+  //       color.green = 11
+  //       color.blue = 124
+  //       color.alpha = 1
+  //       atom.config.set('foo.bar.aColor', color)
+
+  //       color = atom.config.get('foo.bar.aColor')
+  //       expect(color.toHexString()).toBe('#0b0b7c')
+  //       expect(color.toRGBAString()).toBe('rgba(11, 11, 124, 1)')
+  //     })
+
+  //     it('coerces various types to a color object', () => {
+  //       atom.config.set('foo.bar.aColor', 'red')
+  //       expect(atom.config.get('foo.bar.aColor')).toEqual({
+  //         red: 255,
+  //         green: 0,
+  //         blue: 0,
+  //         alpha: 1
+  //       })
+  //       atom.config.set('foo.bar.aColor', '#020')
+  //       expect(atom.config.get('foo.bar.aColor')).toEqual({
+  //         red: 0,
+  //         green: 34,
+  //         blue: 0,
+  //         alpha: 1
+  //       })
+  //       atom.config.set('foo.bar.aColor', '#abcdef')
+  //       expect(atom.config.get('foo.bar.aColor')).toEqual({
+  //         red: 171,
+  //         green: 205,
+  //         blue: 239,
+  //         alpha: 1
+  //       })
+  //       atom.config.set('foo.bar.aColor', 'rgb(1,2,3)')
+  //       expect(atom.config.get('foo.bar.aColor')).toEqual({
+  //         red: 1,
+  //         green: 2,
+  //         blue: 3,
+  //         alpha: 1
+  //       })
+  //       atom.config.set('foo.bar.aColor', 'rgba(4,5,6,.7)')
+  //       expect(atom.config.get('foo.bar.aColor')).toEqual({
+  //         red: 4,
+  //         green: 5,
+  //         blue: 6,
+  //         alpha: 0.7
+  //       })
+  //       atom.config.set('foo.bar.aColor', 'hsl(120,100%,50%)')
+  //       expect(atom.config.get('foo.bar.aColor')).toEqual({
+  //         red: 0,
+  //         green: 255,
+  //         blue: 0,
+  //         alpha: 1
+  //       })
+  //       atom.config.set('foo.bar.aColor', 'hsla(120,100%,50%,0.3)')
+  //       expect(atom.config.get('foo.bar.aColor')).toEqual({
+  //         red: 0,
+  //         green: 255,
+  //         blue: 0,
+  //         alpha: 0.3
+  //       })
+  //       atom.config.set('foo.bar.aColor', {
+  //         red: 100,
+  //         green: 255,
+  //         blue: 2,
+  //         alpha: 0.5
+  //       })
+  //       expect(atom.config.get('foo.bar.aColor')).toEqual({
+  //         red: 100,
+  //         green: 255,
+  //         blue: 2,
+  //         alpha: 0.5
+  //       })
+  //       atom.config.set('foo.bar.aColor', { red: 255 })
+  //       expect(atom.config.get('foo.bar.aColor')).toEqual({
+  //         red: 255,
+  //         green: 0,
+  //         blue: 0,
+  //         alpha: 1
+  //       })
+  //       atom.config.set('foo.bar.aColor', { red: 1000 })
+  //       expect(atom.config.get('foo.bar.aColor')).toEqual({
+  //         red: 255,
+  //         green: 0,
+  //         blue: 0,
+  //         alpha: 1
+  //       })
+  //       atom.config.set('foo.bar.aColor', { red: 'dark' })
+  //       expect(atom.config.get('foo.bar.aColor')).toEqual({
+  //         red: 0,
+  //         green: 0,
+  //         blue: 0,
+  //         alpha: 1
+  //       })
+  //     })
+
+  //     it('reverts back to the default value when undefined is passed to set', () => {
+  //       atom.config.set('foo.bar.aColor', undefined)
+  //       expect(atom.config.get('foo.bar.aColor')).toEqual({
+  //         red: 255,
+  //         green: 255,
+  //         blue: 255,
+  //         alpha: 1
+  //       })
+  //     })
+
+  //     it('will not set non-colors', () => {
+  //       atom.config.set('foo.bar.aColor', null)
+  //       expect(atom.config.get('foo.bar.aColor')).toEqual({
+  //         red: 255,
+  //         green: 255,
+  //         blue: 255,
+  //         alpha: 1
+  //       })
+
+  //       atom.config.set('foo.bar.aColor', 'nope')
+  //       expect(atom.config.get('foo.bar.aColor')).toEqual({
+  //         red: 255,
+  //         green: 255,
+  //         blue: 255,
+  //         alpha: 1
+  //       })
+
+  //       atom.config.set('foo.bar.aColor', 30)
+  //       expect(atom.config.get('foo.bar.aColor')).toEqual({
+  //         red: 255,
+  //         green: 255,
+  //         blue: 255,
+  //         alpha: 1
+  //       })
+
+  //       atom.config.set('foo.bar.aColor', false)
+  //       expect(atom.config.get('foo.bar.aColor')).toEqual({
+  //         red: 255,
+  //         green: 255,
+  //         blue: 255,
+  //         alpha: 1
+  //       })
+  //     })
+
+  //     it('returns a clone of the Color when returned in a parent object', () => {
+  //       const color1 = atom.config.get('foo.bar').aColor
+  //       const color2 = atom.config.get('foo.bar').aColor
+  //       expect(color1.toRGBAString()).toBe('rgba(255, 255, 255, 1)')
+  //       expect(color2.toRGBAString()).toBe('rgba(255, 255, 255, 1)')
+  //       expect(color1).not.toBe(color2)
+  //       expect(color1).toEqual(color2)
+  //     })
+  //   })
+
+  //   describe('when the `enum` key is used', () => {
+  //     beforeEach(() => {
+  //       const schema = {
+  //         type: 'object',
+  //         properties: {
+  //           str: {
+  //             type: 'string',
+  //             default: 'ok',
+  //             enum: ['ok', 'one', 'two']
+  //           },
+  //           int: {
+  //             type: 'integer',
+  //             default: 2,
+  //             enum: [2, 3, 5]
+  //           },
+  //           arr: {
+  //             type: 'array',
+  //             default: ['one', 'two'],
+  //             items: {
+  //               type: 'string',
+  //               enum: ['one', 'two', 'three']
+  //             }
+  //           },
+  //           str_options: {
+  //             type: 'string',
+  //             default: 'one',
+  //             enum: [{ value: 'one', description: 'One' }, 'two', { value: 'three', description: 'Three' }]
+  //           }
+  //         }
+  //       }
+
+  //       atom.config.setSchema('foo.bar', schema)
+  //     })
+
+  //     it('will only set a string when the string is in the enum values', () => {
+  //       expect(atom.config.set('foo.bar.str', 'nope')).toBe(false)
+  //       expect(atom.config.get('foo.bar.str')).toBe('ok')
+
+  //       expect(atom.config.set('foo.bar.str', 'one')).toBe(true)
+  //       expect(atom.config.get('foo.bar.str')).toBe('one')
+  //     })
+
+  //     it('will only set an integer when the integer is in the enum values', () => {
+  //       expect(atom.config.set('foo.bar.int', '400')).toBe(false)
+  //       expect(atom.config.get('foo.bar.int')).toBe(2)
+
+  //       expect(atom.config.set('foo.bar.int', '3')).toBe(true)
+  //       expect(atom.config.get('foo.bar.int')).toBe(3)
+  //     })
+
+  //     it('will only set an array when the array values are in the enum values', () => {
+  //       expect(atom.config.set('foo.bar.arr', ['one', 'five'])).toBe(true)
+  //       expect(atom.config.get('foo.bar.arr')).toEqual(['one'])
+
+  //       expect(atom.config.set('foo.bar.arr', ['two', 'three'])).toBe(true)
+  //       expect(atom.config.get('foo.bar.arr')).toEqual(['two', 'three'])
+  //     })
+
+  //     it('will honor the enum when specified as an array', () => {
+  //       expect(atom.config.set('foo.bar.str_options', 'one')).toBe(true)
+  //       expect(atom.config.get('foo.bar.str_options')).toEqual('one')
+
+  //       expect(atom.config.set('foo.bar.str_options', 'two')).toBe(true)
+  //       expect(atom.config.get('foo.bar.str_options')).toEqual('two')
+
+  //       expect(atom.config.set('foo.bar.str_options', 'One')).toBe(false)
+  //       expect(atom.config.get('foo.bar.str_options')).toEqual('two')
+  //     })
+  //   })
+  // })
 
   describe('when .set/.unset is called prior to .resetUserSettings', () => {
     beforeEach(() => {

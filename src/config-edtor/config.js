@@ -212,11 +212,61 @@ export default class Config {
 
   save() {
     if (this.saveCallback) {
-      let allSettings = { '*': this.settings }
-      // allSettings = Object.assign(allSettings, this.scopedSettingsStore.propertiesForSource(this.mainSource))
-      allSettings = sortObject(allSettings)
-      this.saveCallback(allSettings)
+      this.saveCallback(sortObject({ '*': this.settings }))
     }
+  }
+
+  /**
+   * Add a listener for changes to a given key path. This is different
+   * than {::onDidChange} in that it will immediately call your callback with the
+   * current value of the config entry.
+   * @type {Function}
+   * @param {String} keyPath - name of the key to observe
+   * @param {Function} callback - function to call when the value of the key changes
+   * @returns {Disposable} - disposable with the following keys on which you can call `.dispose()` to unsubscribe
+   * @example
+   * const disposable = vision.config.observe('core.themes', value => {
+   * // do whatever you want
+   * })
+   */
+  observe(keyPath, callback) {
+    callback(this.get(keyPath))
+    return this.onDidChangeKeyPath(keyPath, event => callback(event.newValue))
+  }
+
+  /**
+   * Add a listener for changes to a given key path. If `keyPath` is
+   * not specified, your callback will be called on changes to any key.
+   * @type {Function}
+   * @param {String} [keyPath] - name of the key to observe
+   * @param {Function} callback - function to call when the value of the key changes
+   * @returns {Disposable} - disposable with the following keys on which you can call `.dispose()` to unsubscribe
+   * @example
+   * const disposable = vision.config.onDidChange('core.themes', ({newValue, oldValue}) => {
+   * // do whatever you want
+   * })
+   */
+  onDidChange(...args) {
+    let callback, keyPath
+    if (args.length === 1) {
+      ;[callback] = args
+    } else if (args.length === 2) {
+      ;[keyPath, callback] = args
+    }
+
+    return this.onDidChangeKeyPath(keyPath, callback)
+  }
+
+  onDidChangeKeyPath(keyPath, callback) {
+    let oldValue = this.get(keyPath)
+    return this.emitter.on('did-change', () => {
+      const newValue = this.get(keyPath)
+      if (!_.isEqual(oldValue, newValue)) {
+        const event = { oldValue, newValue }
+        oldValue = newValue
+        return callback(event)
+      }
+    })
   }
 
   /**
