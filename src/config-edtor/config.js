@@ -14,6 +14,21 @@ const schemaEnforcers = {}
 const isPlainObject = value =>
   _.isObject(value) && !Array.isArray(value) && !_.isFunction(value) && !_.isString(value) && !(value instanceof Color)
 
+/**
+ * Transform the given object into another object.
+ * @param {Object} object - the object to transform.
+ * @param {Function} iterator -  A function that takes `(key, value)` arguments and returns a `[key, value]` tuple
+ */
+const mapObject = (object, iterator) => {
+  const newObject = {}
+  Object.keys(object).forEach(objectKey => {
+    const [key, value] = iterator(objectKey, object[objectKey])
+    newObject[key] = value
+  })
+
+  return newObject
+}
+
 const sortObject = value => {
   if (!isPlainObject(value)) {
     return value
@@ -55,7 +70,7 @@ const deepClone = object => {
   } else if (Array.isArray(object)) {
     return object.map(value => deepClone(value))
   } else if (isPlainObject(object)) {
-    return _.mapObject(object, (key, value) => [key, deepClone(value)])
+    return mapObject(object, (key, value) => [key, deepClone(value)])
   } else {
     return object
   }
@@ -128,7 +143,6 @@ export default class Config {
   }
 
   static executeSchemaEnforcers(keyPath, value, schema) {
-    console.log('executeSchemaEnforcers:', keyPath, value, JSON.stringify(schema))
     let error = null
     let types = schema.type
     if (!Array.isArray(types)) {
@@ -149,12 +163,8 @@ export default class Config {
     }
 
     if (error != null) {
-      console.log('executeSchemaEnforcers ERROR:', error)
-
       throw error
     }
-
-    console.log('executeSchemaEnforcers ENFORCED TO:', value)
     return value
   }
 
@@ -178,6 +188,8 @@ export default class Config {
 
     this.transactDepth = 0
     this.pendingOperations = []
+
+    this.requestSave = _.debounce(() => this.save(), 1)
   }
 
   initialize({ saveCallback, mainSource, projectHomeSchema }) {
@@ -471,7 +483,6 @@ export default class Config {
   }
 
   makeValueConformToSchema(keyPath, value, options) {
-    console.log('makeValueConformToSchema:', keyPath, value, JSON.stringify(options))
     if (options != null ? options.suppressException : undefined) {
       try {
         return this.makeValueConformToSchema(keyPath, value)
