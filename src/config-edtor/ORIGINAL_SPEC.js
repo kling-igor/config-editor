@@ -39,7 +39,7 @@ describe('Config', () => {
     //   atom.config.setDefaults('bar', { baz: 7 })
     //   expect(atom.config.get('bar.baz')).toEqual({ a: 3 })
     // })
-/*
+    /*
     describe("when a 'sources' option is specified", () =>
       it('only retrieves values from the specified sources', () => {
         atom.config.set('x.y', 1, { scopeSelector: '.foo', source: 'a' })
@@ -57,8 +57,7 @@ describe('Config', () => {
       }))
 */
 
-
-/*
+    /*
     describe("when an 'excludeSources' option is specified", () =>
       it('only retrieves values from the specified sources', () => {
         atom.config.set('x.y', 0)
@@ -95,7 +94,7 @@ describe('Config', () => {
       }))
 */
 
-/*
+    /*
     describe("when a 'scope' option is given", () => {
       it('returns the property with the most specific scope selector', () => {
         atom.config.set('foo.bar.baz', 42, {
@@ -124,7 +123,7 @@ describe('Config', () => {
         expect(atom.config.get('foo.bar.baz', { scope: ['.text'] })).toBeUndefined()
       })
 */
-/*
+    /*
       it('favors the most recently added properties in the event of a specificity tie', () => {
         atom.config.set('foo.bar.baz', 42, {
           scopeSelector: '.source.coffee .string.quoted.single'
@@ -145,7 +144,7 @@ describe('Config', () => {
         ).toBe(22)
       })
 */
-/*
+    /*
       describe('when there are global defaults', () =>
         it('falls back to the global when there is no scoped property specified', () => {
           atom.config.setDefaults('foo', { hasDefault: 'ok' })
@@ -156,7 +155,7 @@ describe('Config', () => {
           ).toBe('ok')
         }))
 */
-/*
+    /*
       describe('when package settings are added after user settings', () =>
         it("returns the user's setting because the user's setting has higher priority", () => {
           atom.config.set('foo.bar.baz', 100, {
@@ -171,7 +170,7 @@ describe('Config', () => {
     })
   })
 */
-/*
+    /*
   describe('.getAll(keyPath, {scope, sources, excludeSources})', () => {
     it('reads all of the values for a given key-path', () => {
       expect(atom.config.set('foo', 41)).toBe(true)
@@ -199,7 +198,7 @@ describe('Config', () => {
     })
   })
 */
-/*
+    /*
   describe('.set(keyPath, value, {source, scopeSelector})', () => {
     it("allows a key path's value to be written", () => {
       expect(atom.config.set('foo.bar.baz', 42)).toBe(true)
@@ -229,7 +228,7 @@ describe('Config', () => {
       expect(() => atom.config.set('foo', 1, { source: ['.source.ruby'] })).toThrow()
     })
 */
-/*
+    /*
     describe('when the key-path is null', () =>
       it('sets the root object', () => {
         expect(atom.config.set(null, { editor: { tabLength: 6 } })).toBe(true)
@@ -292,7 +291,7 @@ describe('Config', () => {
     //     atom.config.set('foo.changes', 1)
     //     expect(atom.config.get('foo.changes', { sources: [userConfigPath] })).toBeUndefined()
     //   }))
-/*
+    /*
     describe("when a 'scopeSelector' is given", () =>
       it('sets the value and overrides the others', () => {
         atom.config.set('foo.bar.baz', 42, {
@@ -322,7 +321,7 @@ describe('Config', () => {
       }))
   })
 */
-/*
+    /*
   describe('.unset(keyPath, {source, scopeSelector})', () => {
     beforeEach(() =>
       atom.config.setSchema('foo', {
@@ -576,180 +575,184 @@ describe('Config', () => {
     })
   })
 */
-  describe('.onDidChange(keyPath, {scope})', () => {
-    let observeHandler = []
+    describe('.onDidChange(keyPath, {scope})', () => {
+      let observeHandler = []
 
-    describe('when a keyPath is specified', () => {
-      beforeEach(() => {
-        observeHandler = jasmine.createSpy('observeHandler')
-        atom.config.set('foo.bar.baz', 'value 1')
-        atom.config.onDidChange('foo.bar.baz', observeHandler)
+      describe('when a keyPath is specified', () => {
+        beforeEach(() => {
+          observeHandler = jasmine.createSpy('observeHandler')
+          atom.config.set('foo.bar.baz', 'value 1')
+          atom.config.onDidChange('foo.bar.baz', observeHandler)
+        })
+
+        it('does not fire the given callback with the current value at the keypath', () =>
+          expect(observeHandler).not.toHaveBeenCalled())
+
+        it('fires the callback every time the observed value changes', () => {
+          atom.config.set('foo.bar.baz', 'value 2')
+          expect(observeHandler).toHaveBeenCalledWith({
+            newValue: 'value 2',
+            oldValue: 'value 1'
+          })
+          observeHandler.reset()
+          observeHandler.andCallFake(() => {
+            throw new Error('oops')
+          })
+          expect(() => atom.config.set('foo.bar.baz', 'value 1')).toThrow('oops')
+          expect(observeHandler).toHaveBeenCalledWith({
+            newValue: 'value 1',
+            oldValue: 'value 2'
+          })
+          observeHandler.reset()
+
+          // Regression: exception in earlier handler shouldn't put observer
+          // into a bad state.
+          atom.config.set('something.else', 'new value')
+          expect(observeHandler).not.toHaveBeenCalled()
+        })
       })
 
-      it('does not fire the given callback with the current value at the keypath', () =>
-        expect(observeHandler).not.toHaveBeenCalled())
-
-      it('fires the callback every time the observed value changes', () => {
-        atom.config.set('foo.bar.baz', 'value 2')
-        expect(observeHandler).toHaveBeenCalledWith({
-          newValue: 'value 2',
-          oldValue: 'value 1'
+      describe('when a keyPath is not specified', () => {
+        beforeEach(() => {
+          observeHandler = jasmine.createSpy('observeHandler')
+          atom.config.set('foo.bar.baz', 'value 1')
+          atom.config.onDidChange(observeHandler)
         })
-        observeHandler.reset()
-        observeHandler.andCallFake(() => {
-          throw new Error('oops')
-        })
-        expect(() => atom.config.set('foo.bar.baz', 'value 1')).toThrow('oops')
-        expect(observeHandler).toHaveBeenCalledWith({
-          newValue: 'value 1',
-          oldValue: 'value 2'
-        })
-        observeHandler.reset()
 
-        // Regression: exception in earlier handler shouldn't put observer
-        // into a bad state.
-        atom.config.set('something.else', 'new value')
-        expect(observeHandler).not.toHaveBeenCalled()
-      })
-    })
+        it('does not fire the given callback initially', () => expect(observeHandler).not.toHaveBeenCalled())
 
-    describe('when a keyPath is not specified', () => {
-      beforeEach(() => {
-        observeHandler = jasmine.createSpy('observeHandler')
-        atom.config.set('foo.bar.baz', 'value 1')
-        atom.config.onDidChange(observeHandler)
+        it('fires the callback every time any value changes', () => {
+          observeHandler.reset() // clear the initial call
+          atom.config.set('foo.bar.baz', 'value 2')
+          expect(observeHandler).toHaveBeenCalled()
+          expect(observeHandler.mostRecentCall.args[0].newValue.foo.bar.baz).toBe('value 2')
+          expect(observeHandler.mostRecentCall.args[0].oldValue.foo.bar.baz).toBe('value 1')
+
+          observeHandler.reset()
+          atom.config.set('foo.bar.baz', 'value 1')
+          expect(observeHandler).toHaveBeenCalled()
+          expect(observeHandler.mostRecentCall.args[0].newValue.foo.bar.baz).toBe('value 1')
+          expect(observeHandler.mostRecentCall.args[0].oldValue.foo.bar.baz).toBe('value 2')
+
+          observeHandler.reset()
+          atom.config.set('foo.bar.int', 1)
+          expect(observeHandler).toHaveBeenCalled()
+          expect(observeHandler.mostRecentCall.args[0].newValue.foo.bar.int).toBe(1)
+          expect(observeHandler.mostRecentCall.args[0].oldValue.foo.bar.int).toBe(undefined)
+        })
       })
 
-      it('does not fire the given callback initially', () => expect(observeHandler).not.toHaveBeenCalled())
+      describe("when a 'scope' is given", () =>
+        it('calls the supplied callback when the value at the descriptor/keypath changes', () => {
+          const changeSpy = jasmine.createSpy('onDidChange callback')
+          atom.config.onDidChange(
+            'foo.bar.baz',
+            { scope: ['.source.coffee', '.string.quoted.double.coffee'] },
+            changeSpy
+          )
 
-      it('fires the callback every time any value changes', () => {
-        observeHandler.reset() // clear the initial call
-        atom.config.set('foo.bar.baz', 'value 2')
-        expect(observeHandler).toHaveBeenCalled()
-        expect(observeHandler.mostRecentCall.args[0].newValue.foo.bar.baz).toBe('value 2')
-        expect(observeHandler.mostRecentCall.args[0].oldValue.foo.bar.baz).toBe('value 1')
+          atom.config.set('foo.bar.baz', 12)
+          expect(changeSpy).toHaveBeenCalledWith({
+            oldValue: undefined,
+            newValue: 12
+          })
+          changeSpy.reset()
 
-        observeHandler.reset()
-        atom.config.set('foo.bar.baz', 'value 1')
-        expect(observeHandler).toHaveBeenCalled()
-        expect(observeHandler.mostRecentCall.args[0].newValue.foo.bar.baz).toBe('value 1')
-        expect(observeHandler.mostRecentCall.args[0].oldValue.foo.bar.baz).toBe('value 2')
+          atom.config.set('foo.bar.baz', 22, {
+            scopeSelector: '.source .string.quoted.double',
+            source: 'a'
+          })
+          expect(changeSpy).toHaveBeenCalledWith({ oldValue: 12, newValue: 22 })
+          changeSpy.reset()
 
-        observeHandler.reset()
-        atom.config.set('foo.bar.int', 1)
-        expect(observeHandler).toHaveBeenCalled()
-        expect(observeHandler.mostRecentCall.args[0].newValue.foo.bar.int).toBe(1)
-        expect(observeHandler.mostRecentCall.args[0].oldValue.foo.bar.int).toBe(undefined)
-      })
+          atom.config.set('foo.bar.baz', 42, {
+            scopeSelector: '.source.coffee .string.quoted.double.coffee',
+            source: 'b'
+          })
+          expect(changeSpy).toHaveBeenCalledWith({ oldValue: 22, newValue: 42 })
+          changeSpy.reset()
+
+          atom.config.unset(null, {
+            scopeSelector: '.source.coffee .string.quoted.double.coffee',
+            source: 'b'
+          })
+          expect(changeSpy).toHaveBeenCalledWith({ oldValue: 42, newValue: 22 })
+          changeSpy.reset()
+
+          atom.config.unset(null, {
+            scopeSelector: '.source .string.quoted.double',
+            source: 'a'
+          })
+          expect(changeSpy).toHaveBeenCalledWith({ oldValue: 22, newValue: 12 })
+          changeSpy.reset()
+
+          atom.config.set('foo.bar.baz', undefined)
+          expect(changeSpy).toHaveBeenCalledWith({
+            oldValue: 12,
+            newValue: undefined
+          })
+          changeSpy.reset()
+        }))
     })
 
-    describe("when a 'scope' is given", () =>
-      it('calls the supplied callback when the value at the descriptor/keypath changes', () => {
-        const changeSpy = jasmine.createSpy('onDidChange callback')
-        atom.config.onDidChange('foo.bar.baz', { scope: ['.source.coffee', '.string.quoted.double.coffee'] }, changeSpy)
+    // describe('.observe(keyPath, {scope})', () => {
+    //   let [observeHandler, observeSubscription] = []
 
-        atom.config.set('foo.bar.baz', 12)
-        expect(changeSpy).toHaveBeenCalledWith({
-          oldValue: undefined,
-          newValue: 12
-        })
-        changeSpy.reset()
+    //   beforeEach(() => {
+    //     observeHandler = jasmine.createSpy('observeHandler')
+    //     atom.config.set('foo.bar.baz', 'value 1')
+    //     observeSubscription = atom.config.observe('foo.bar.baz', observeHandler)
+    //   })
 
-        atom.config.set('foo.bar.baz', 22, {
-          scopeSelector: '.source .string.quoted.double',
-          source: 'a'
-        })
-        expect(changeSpy).toHaveBeenCalledWith({ oldValue: 12, newValue: 22 })
-        changeSpy.reset()
+    //   it('fires the given callback with the current value at the keypath', () =>
+    //     expect(observeHandler).toHaveBeenCalledWith('value 1'))
 
-        atom.config.set('foo.bar.baz', 42, {
-          scopeSelector: '.source.coffee .string.quoted.double.coffee',
-          source: 'b'
-        })
-        expect(changeSpy).toHaveBeenCalledWith({ oldValue: 22, newValue: 42 })
-        changeSpy.reset()
+    //   it('fires the callback every time the observed value changes', () => {
+    //     observeHandler.reset() // clear the initial call
+    //     atom.config.set('foo.bar.baz', 'value 2')
+    //     expect(observeHandler).toHaveBeenCalledWith('value 2')
 
-        atom.config.unset(null, {
-          scopeSelector: '.source.coffee .string.quoted.double.coffee',
-          source: 'b'
-        })
-        expect(changeSpy).toHaveBeenCalledWith({ oldValue: 42, newValue: 22 })
-        changeSpy.reset()
+    //     observeHandler.reset()
+    //     atom.config.set('foo.bar.baz', 'value 1')
+    //     expect(observeHandler).toHaveBeenCalledWith('value 1')
+    //     advanceClock(100) // complete pending save that was requested in ::set
 
-        atom.config.unset(null, {
-          scopeSelector: '.source .string.quoted.double',
-          source: 'a'
-        })
-        expect(changeSpy).toHaveBeenCalledWith({ oldValue: 22, newValue: 12 })
-        changeSpy.reset()
+    //     observeHandler.reset()
+    //     atom.config.resetUserSettings({ foo: {} })
+    //     expect(observeHandler).toHaveBeenCalledWith(undefined)
+    //   })
 
-        atom.config.set('foo.bar.baz', undefined)
-        expect(changeSpy).toHaveBeenCalledWith({
-          oldValue: 12,
-          newValue: undefined
-        })
-        changeSpy.reset()
-      }))
-  })
+    //   it('fires the callback when the observed value is deleted', () => {
+    //     observeHandler.reset() // clear the initial call
+    //     atom.config.set('foo.bar.baz', undefined)
+    //     expect(observeHandler).toHaveBeenCalledWith(undefined)
+    //   })
 
-  describe('.observe(keyPath, {scope})', () => {
-    let [observeHandler, observeSubscription] = []
+    //   it('fires the callback when the full key path goes into and out of existence', () => {
+    //     observeHandler.reset() // clear the initial call
+    //     atom.config.set('foo.bar', undefined)
+    //     expect(observeHandler).toHaveBeenCalledWith(undefined)
 
-    beforeEach(() => {
-      observeHandler = jasmine.createSpy('observeHandler')
-      atom.config.set('foo.bar.baz', 'value 1')
-      observeSubscription = atom.config.observe('foo.bar.baz', observeHandler)
-    })
+    //     observeHandler.reset()
+    //     atom.config.set('foo.bar.baz', "i'm back")
+    //     expect(observeHandler).toHaveBeenCalledWith("i'm back")
+    //   })
 
-    it('fires the given callback with the current value at the keypath', () =>
-      expect(observeHandler).toHaveBeenCalledWith('value 1'))
+    //   it('does not fire the callback once the subscription is disposed', () => {
+    //     observeHandler.reset() // clear the initial call
+    //     observeSubscription.dispose()
+    //     atom.config.set('foo.bar.baz', 'value 2')
+    //     expect(observeHandler).not.toHaveBeenCalled()
+    //   })
 
-    it('fires the callback every time the observed value changes', () => {
-      observeHandler.reset() // clear the initial call
-      atom.config.set('foo.bar.baz', 'value 2')
-      expect(observeHandler).toHaveBeenCalledWith('value 2')
+    //   it('does not fire the callback for a similarly named keyPath', () => {
+    //     const bazCatHandler = jasmine.createSpy('bazCatHandler')
+    //     observeSubscription = atom.config.observe('foo.bar.bazCat', bazCatHandler)
 
-      observeHandler.reset()
-      atom.config.set('foo.bar.baz', 'value 1')
-      expect(observeHandler).toHaveBeenCalledWith('value 1')
-      advanceClock(100) // complete pending save that was requested in ::set
-
-      observeHandler.reset()
-      atom.config.resetUserSettings({ foo: {} })
-      expect(observeHandler).toHaveBeenCalledWith(undefined)
-    })
-
-    it('fires the callback when the observed value is deleted', () => {
-      observeHandler.reset() // clear the initial call
-      atom.config.set('foo.bar.baz', undefined)
-      expect(observeHandler).toHaveBeenCalledWith(undefined)
-    })
-
-    it('fires the callback when the full key path goes into and out of existence', () => {
-      observeHandler.reset() // clear the initial call
-      atom.config.set('foo.bar', undefined)
-      expect(observeHandler).toHaveBeenCalledWith(undefined)
-
-      observeHandler.reset()
-      atom.config.set('foo.bar.baz', "i'm back")
-      expect(observeHandler).toHaveBeenCalledWith("i'm back")
-    })
-
-    it('does not fire the callback once the subscription is disposed', () => {
-      observeHandler.reset() // clear the initial call
-      observeSubscription.dispose()
-      atom.config.set('foo.bar.baz', 'value 2')
-      expect(observeHandler).not.toHaveBeenCalled()
-    })
-
-    it('does not fire the callback for a similarly named keyPath', () => {
-      const bazCatHandler = jasmine.createSpy('bazCatHandler')
-      observeSubscription = atom.config.observe('foo.bar.bazCat', bazCatHandler)
-
-      bazCatHandler.reset()
-      atom.config.set('foo.bar.baz', 'value 10')
-      expect(bazCatHandler).not.toHaveBeenCalled()
-    })
+    //     bazCatHandler.reset()
+    //     atom.config.set('foo.bar.baz', 'value 10')
+    //     expect(bazCatHandler).not.toHaveBeenCalled()
+    //   })
 
     describe("when a 'scope' is given", () => {
       let otherHandler = null
@@ -939,546 +942,546 @@ describe('Config', () => {
     })
   })
 
-  describe('.save()', () => {
-    it('calls the save callback with any non-default properties', () => {
-      atom.config.set('a.b.c', 1)
-      atom.config.set('a.b.d', 2)
-      atom.config.set('x.y.z', 3)
-      atom.config.setDefaults('a.b', { e: 4, f: 5 })
+  // describe('.save()', () => {
+  //   it('calls the save callback with any non-default properties', () => {
+  //     atom.config.set('a.b.c', 1)
+  //     atom.config.set('a.b.d', 2)
+  //     atom.config.set('x.y.z', 3)
+  //     atom.config.setDefaults('a.b', { e: 4, f: 5 })
 
-      atom.config.save()
-      expect(savedSettings).toEqual([{ '*': atom.config.settings }])
-    })
+  //     atom.config.save()
+  //     expect(savedSettings).toEqual([{ '*': atom.config.settings }])
+  //   })
 
-    it('serializes properties in alphabetical order', () => {
-      atom.config.set('foo', 1)
-      atom.config.set('bar', 2)
-      atom.config.set('baz.foo', 3)
-      atom.config.set('baz.bar', 4)
+  //   it('serializes properties in alphabetical order', () => {
+  //     atom.config.set('foo', 1)
+  //     atom.config.set('bar', 2)
+  //     atom.config.set('baz.foo', 3)
+  //     atom.config.set('baz.bar', 4)
+
+  //     savedSettings.length = 0
+  //     atom.config.save()
+
+  //     const writtenConfig = savedSettings[0]
+  //     expect(writtenConfig).toEqual({ '*': atom.config.settings })
+
+  //     let expectedKeys = ['bar', 'baz', 'foo']
+  //     let foundKeys = []
+  //     for (const key in writtenConfig['*']) {
+  //       if (expectedKeys.includes(key)) {
+  //         foundKeys.push(key)
+  //       }
+  //     }
+  //     expect(foundKeys).toEqual(expectedKeys)
+  //     expectedKeys = ['bar', 'foo']
+  //     foundKeys = []
+  //     for (const key in writtenConfig['*']['baz']) {
+  //       if (expectedKeys.includes(key)) {
+  //         foundKeys.push(key)
+  //       }
+  //     }
+  //     expect(foundKeys).toEqual(expectedKeys)
+  //   })
+
+  describe('when scoped settings are defined', () => {
+    it('serializes any explicitly set config settings', () => {
+      atom.config.set('foo.bar', 'ruby', { scopeSelector: '.source.ruby' })
+      atom.config.set('foo.omg', 'wow', { scopeSelector: '.source.ruby' })
+      atom.config.set('foo.bar', 'coffee', {
+        scopeSelector: '.source.coffee'
+      })
 
       savedSettings.length = 0
       atom.config.save()
 
       const writtenConfig = savedSettings[0]
-      expect(writtenConfig).toEqual({ '*': atom.config.settings })
-
-      let expectedKeys = ['bar', 'baz', 'foo']
-      let foundKeys = []
-      for (const key in writtenConfig['*']) {
-        if (expectedKeys.includes(key)) {
-          foundKeys.push(key)
-        }
-      }
-      expect(foundKeys).toEqual(expectedKeys)
-      expectedKeys = ['bar', 'foo']
-      foundKeys = []
-      for (const key in writtenConfig['*']['baz']) {
-        if (expectedKeys.includes(key)) {
-          foundKeys.push(key)
-        }
-      }
-      expect(foundKeys).toEqual(expectedKeys)
-    })
-
-    describe('when scoped settings are defined', () => {
-      it('serializes any explicitly set config settings', () => {
-        atom.config.set('foo.bar', 'ruby', { scopeSelector: '.source.ruby' })
-        atom.config.set('foo.omg', 'wow', { scopeSelector: '.source.ruby' })
-        atom.config.set('foo.bar', 'coffee', {
-          scopeSelector: '.source.coffee'
-        })
-
-        savedSettings.length = 0
-        atom.config.save()
-
-        const writtenConfig = savedSettings[0]
-        expect(writtenConfig).toEqualJson({
-          '*': atom.config.settings,
-          '.ruby.source': {
-            foo: {
-              bar: 'ruby',
-              omg: 'wow'
-            }
-          },
-          '.coffee.source': {
-            foo: {
-              bar: 'coffee'
-            }
+      expect(writtenConfig).toEqualJson({
+        '*': atom.config.settings,
+        '.ruby.source': {
+          foo: {
+            bar: 'ruby',
+            omg: 'wow'
           }
-        })
+        },
+        '.coffee.source': {
+          foo: {
+            bar: 'coffee'
+          }
+        }
       })
     })
   })
+})
 
-  describe('.resetUserSettings()', () => {
-    beforeEach(() => {
-      atom.config.setSchema('foo', {
-        type: 'object',
-        properties: {
-          bar: {
-            type: 'string',
-            default: 'def'
-          },
-          int: {
-            type: 'integer',
-            default: 12
-          }
+describe('.resetUserSettings()', () => {
+  beforeEach(() => {
+    atom.config.setSchema('foo', {
+      type: 'object',
+      properties: {
+        bar: {
+          type: 'string',
+          default: 'def'
+        },
+        int: {
+          type: 'integer',
+          default: 12
         }
-      })
+      }
     })
+  })
 
-    describe('when the config file contains scoped settings', () => {
-      it('updates the config data based on the file contents', () => {
-        atom.config.resetUserSettings({
-          '*': {
-            foo: {
-              bar: 'baz'
-            }
-          },
-
-          '.source.ruby': {
-            foo: {
-              bar: 'more-specific'
-            }
-          }
-        })
-        expect(atom.config.get('foo.bar')).toBe('baz')
-        expect(atom.config.get('foo.bar', { scope: ['.source.ruby'] })).toBe('more-specific')
-      })
-    })
-
-    describe('when the config file does not conform to the schema', () => {
-      it('validates and does not load the incorrect values', () => {
-        atom.config.resetUserSettings({
-          '*': {
-            foo: {
-              bar: 'omg',
-              int: 'baz'
-            }
-          },
-          '.source.ruby': {
-            foo: {
-              bar: 'scoped',
-              int: 'nope'
-            }
-          }
-        })
-        expect(atom.config.get('foo.int')).toBe(12)
-        expect(atom.config.get('foo.bar')).toBe('omg')
-        expect(atom.config.get('foo.int', { scope: ['.source.ruby'] })).toBe(12)
-        expect(atom.config.get('foo.bar', { scope: ['.source.ruby'] })).toBe('scoped')
-      })
-    })
-
+  describe('when the config file contains scoped settings', () => {
     it('updates the config data based on the file contents', () => {
-      atom.config.resetUserSettings({ foo: { bar: 'baz' } })
-      expect(atom.config.get('foo.bar')).toBe('baz')
-    })
-
-    it('notifies observers for updated keypaths on load', () => {
-      const observeHandler = jasmine.createSpy('observeHandler')
-      atom.config.observe('foo.bar', observeHandler)
-      atom.config.resetUserSettings({ foo: { bar: 'baz' } })
-      expect(observeHandler).toHaveBeenCalledWith('baz')
-    })
-
-    describe('when the config file contains values that do not adhere to the schema', () => {
-      it('updates the only the settings that have values matching the schema', () => {
-        atom.config.resetUserSettings({
-          foo: {
-            bar: 'baz',
-            int: 'bad value'
-          }
-        })
-        expect(atom.config.get('foo.bar')).toBe('baz')
-        expect(atom.config.get('foo.int')).toBe(12)
-        expect(console.warn).toHaveBeenCalled()
-        expect(console.warn.mostRecentCall.args[0]).toContain('foo.int')
-      })
-    })
-
-    it('does not fire a change event for paths that did not change', () => {
-      atom.config.resetUserSettings({
-        foo: { bar: 'baz', int: 3 }
-      })
-
-      const noChangeSpy = jasmine.createSpy('unchanged')
-      atom.config.onDidChange('foo.bar', noChangeSpy)
-
-      atom.config.resetUserSettings({
-        foo: { bar: 'baz', int: 4 }
-      })
-
-      expect(noChangeSpy).not.toHaveBeenCalled()
-      expect(atom.config.get('foo.bar')).toBe('baz')
-      expect(atom.config.get('foo.int')).toBe(4)
-    })
-
-    it('does not fire a change event for paths whose non-primitive values did not change', () => {
-      atom.config.setSchema('foo.bar', {
-        type: 'array',
-        items: {
-          type: 'string'
-        }
-      })
-
-      atom.config.resetUserSettings({
-        foo: { bar: ['baz', 'quux'], int: 2 }
-      })
-
-      const noChangeSpy = jasmine.createSpy('unchanged')
-      atom.config.onDidChange('foo.bar', noChangeSpy)
-
-      atom.config.resetUserSettings({
-        foo: { bar: ['baz', 'quux'], int: 2 }
-      })
-
-      expect(noChangeSpy).not.toHaveBeenCalled()
-      expect(atom.config.get('foo.bar')).toEqual(['baz', 'quux'])
-    })
-
-    describe('when a setting with a default is removed', () => {
-      it('resets the setting back to the default', () => {
-        atom.config.resetUserSettings({
-          foo: { bar: ['baz', 'quux'], int: 2 }
-        })
-
-        const events = []
-        atom.config.onDidChange('foo.int', event => events.push(event))
-
-        atom.config.resetUserSettings({
-          foo: { bar: ['baz', 'quux'] }
-        })
-
-        expect(events.length).toBe(1)
-        expect(events[0]).toEqual({ oldValue: 2, newValue: 12 })
-      })
-    })
-
-    it('keeps all the global scope settings after overriding one', () => {
       atom.config.resetUserSettings({
         '*': {
           foo: {
-            bar: 'baz',
-            int: 99
+            bar: 'baz'
+          }
+        },
+
+        '.source.ruby': {
+          foo: {
+            bar: 'more-specific'
           }
         }
       })
-
-      atom.config.set('foo.int', 50, { scopeSelector: '*' })
-
-      advanceClock(100)
-
-      expect(savedSettings[0]['*'].foo).toEqual({
-        bar: 'baz',
-        int: 50
-      })
-      expect(atom.config.get('foo.int', { scope: ['*'] })).toEqual(50)
-      expect(atom.config.get('foo.bar', { scope: ['*'] })).toEqual('baz')
-      expect(atom.config.get('foo.int')).toEqual(50)
+      expect(atom.config.get('foo.bar')).toBe('baz')
+      expect(atom.config.get('foo.bar', { scope: ['.source.ruby'] })).toBe('more-specific')
     })
   })
 
-  describe('.pushAtKeyPath(keyPath, value)', () => {
-    it('pushes the given value to the array at the key path and updates observers', () => {
-      atom.config.set('foo.bar.baz', ['a'])
-      const observeHandler = jasmine.createSpy('observeHandler')
-      atom.config.observe('foo.bar.baz', observeHandler)
-      observeHandler.reset()
-
-      expect(atom.config.pushAtKeyPath('foo.bar.baz', 'b')).toBe(2)
-      expect(atom.config.get('foo.bar.baz')).toEqual(['a', 'b'])
-      expect(observeHandler).toHaveBeenCalledWith(atom.config.get('foo.bar.baz'))
-    })
-  })
-
-  describe('.unshiftAtKeyPath(keyPath, value)', () => {
-    it('unshifts the given value to the array at the key path and updates observers', () => {
-      atom.config.set('foo.bar.baz', ['b'])
-      const observeHandler = jasmine.createSpy('observeHandler')
-      atom.config.observe('foo.bar.baz', observeHandler)
-      observeHandler.reset()
-
-      expect(atom.config.unshiftAtKeyPath('foo.bar.baz', 'a')).toBe(2)
-      expect(atom.config.get('foo.bar.baz')).toEqual(['a', 'b'])
-      expect(observeHandler).toHaveBeenCalledWith(atom.config.get('foo.bar.baz'))
-    })
-  })
-
-  describe('.removeAtKeyPath(keyPath, value)', () => {
-    it('removes the given value from the array at the key path and updates observers', () => {
-      atom.config.set('foo.bar.baz', ['a', 'b', 'c'])
-      const observeHandler = jasmine.createSpy('observeHandler')
-      atom.config.observe('foo.bar.baz', observeHandler)
-      observeHandler.reset()
-
-      expect(atom.config.removeAtKeyPath('foo.bar.baz', 'b')).toEqual(['a', 'c'])
-      expect(atom.config.get('foo.bar.baz')).toEqual(['a', 'c'])
-      expect(observeHandler).toHaveBeenCalledWith(atom.config.get('foo.bar.baz'))
-    })
-  })
-
-  describe('.setDefaults(keyPath, defaults)', () => {
-    it('assigns any previously-unassigned keys to the object at the key path', () => {
-      atom.config.set('foo.bar.baz', { a: 1 })
-      atom.config.setDefaults('foo.bar.baz', { a: 2, b: 3, c: 4 })
-      expect(atom.config.get('foo.bar.baz.a')).toBe(1)
-      expect(atom.config.get('foo.bar.baz.b')).toBe(3)
-      expect(atom.config.get('foo.bar.baz.c')).toBe(4)
-
-      atom.config.setDefaults('foo.quux', { x: 0, y: 1 })
-      expect(atom.config.get('foo.quux.x')).toBe(0)
-      expect(atom.config.get('foo.quux.y')).toBe(1)
-    })
-
-    it('emits an updated event', () => {
-      const updatedCallback = jasmine.createSpy('updated')
-      atom.config.onDidChange('foo.bar.baz.a', updatedCallback)
-      expect(updatedCallback.callCount).toBe(0)
-      atom.config.setDefaults('foo.bar.baz', { a: 2 })
-      expect(updatedCallback.callCount).toBe(1)
-    })
-  })
-
-  describe('.setSchema(keyPath, schema)', () => {
-    it('creates a properly nested schema', () => {
-      const schema = {
-        type: 'object',
-        properties: {
-          anInt: {
-            type: 'integer',
-            default: 12
+  describe('when the config file does not conform to the schema', () => {
+    it('validates and does not load the incorrect values', () => {
+      atom.config.resetUserSettings({
+        '*': {
+          foo: {
+            bar: 'omg',
+            int: 'baz'
           }
+        },
+        '.source.ruby': {
+          foo: {
+            bar: 'scoped',
+            int: 'nope'
+          }
+        }
+      })
+      expect(atom.config.get('foo.int')).toBe(12)
+      expect(atom.config.get('foo.bar')).toBe('omg')
+      expect(atom.config.get('foo.int', { scope: ['.source.ruby'] })).toBe(12)
+      expect(atom.config.get('foo.bar', { scope: ['.source.ruby'] })).toBe('scoped')
+    })
+  })
+
+  it('updates the config data based on the file contents', () => {
+    atom.config.resetUserSettings({ foo: { bar: 'baz' } })
+    expect(atom.config.get('foo.bar')).toBe('baz')
+  })
+
+  it('notifies observers for updated keypaths on load', () => {
+    const observeHandler = jasmine.createSpy('observeHandler')
+    atom.config.observe('foo.bar', observeHandler)
+    atom.config.resetUserSettings({ foo: { bar: 'baz' } })
+    expect(observeHandler).toHaveBeenCalledWith('baz')
+  })
+
+  describe('when the config file contains values that do not adhere to the schema', () => {
+    it('updates the only the settings that have values matching the schema', () => {
+      atom.config.resetUserSettings({
+        foo: {
+          bar: 'baz',
+          int: 'bad value'
+        }
+      })
+      expect(atom.config.get('foo.bar')).toBe('baz')
+      expect(atom.config.get('foo.int')).toBe(12)
+      expect(console.warn).toHaveBeenCalled()
+      expect(console.warn.mostRecentCall.args[0]).toContain('foo.int')
+    })
+  })
+
+  it('does not fire a change event for paths that did not change', () => {
+    atom.config.resetUserSettings({
+      foo: { bar: 'baz', int: 3 }
+    })
+
+    const noChangeSpy = jasmine.createSpy('unchanged')
+    atom.config.onDidChange('foo.bar', noChangeSpy)
+
+    atom.config.resetUserSettings({
+      foo: { bar: 'baz', int: 4 }
+    })
+
+    expect(noChangeSpy).not.toHaveBeenCalled()
+    expect(atom.config.get('foo.bar')).toBe('baz')
+    expect(atom.config.get('foo.int')).toBe(4)
+  })
+
+  it('does not fire a change event for paths whose non-primitive values did not change', () => {
+    atom.config.setSchema('foo.bar', {
+      type: 'array',
+      items: {
+        type: 'string'
+      }
+    })
+
+    atom.config.resetUserSettings({
+      foo: { bar: ['baz', 'quux'], int: 2 }
+    })
+
+    const noChangeSpy = jasmine.createSpy('unchanged')
+    atom.config.onDidChange('foo.bar', noChangeSpy)
+
+    atom.config.resetUserSettings({
+      foo: { bar: ['baz', 'quux'], int: 2 }
+    })
+
+    expect(noChangeSpy).not.toHaveBeenCalled()
+    expect(atom.config.get('foo.bar')).toEqual(['baz', 'quux'])
+  })
+
+  describe('when a setting with a default is removed', () => {
+    it('resets the setting back to the default', () => {
+      atom.config.resetUserSettings({
+        foo: { bar: ['baz', 'quux'], int: 2 }
+      })
+
+      const events = []
+      atom.config.onDidChange('foo.int', event => events.push(event))
+
+      atom.config.resetUserSettings({
+        foo: { bar: ['baz', 'quux'] }
+      })
+
+      expect(events.length).toBe(1)
+      expect(events[0]).toEqual({ oldValue: 2, newValue: 12 })
+    })
+  })
+
+  it('keeps all the global scope settings after overriding one', () => {
+    atom.config.resetUserSettings({
+      '*': {
+        foo: {
+          bar: 'baz',
+          int: 99
         }
       }
+    })
 
-      atom.config.setSchema('foo.bar', schema)
+    atom.config.set('foo.int', 50, { scopeSelector: '*' })
 
-      expect(atom.config.getSchema('foo')).toEqual({
-        type: 'object',
-        properties: {
-          bar: {
-            type: 'object',
-            properties: {
-              anInt: {
-                type: 'integer',
-                default: 12
-              }
+    advanceClock(100)
+
+    expect(savedSettings[0]['*'].foo).toEqual({
+      bar: 'baz',
+      int: 50
+    })
+    expect(atom.config.get('foo.int', { scope: ['*'] })).toEqual(50)
+    expect(atom.config.get('foo.bar', { scope: ['*'] })).toEqual('baz')
+    expect(atom.config.get('foo.int')).toEqual(50)
+  })
+})
+
+describe('.pushAtKeyPath(keyPath, value)', () => {
+  it('pushes the given value to the array at the key path and updates observers', () => {
+    atom.config.set('foo.bar.baz', ['a'])
+    const observeHandler = jasmine.createSpy('observeHandler')
+    atom.config.observe('foo.bar.baz', observeHandler)
+    observeHandler.reset()
+
+    expect(atom.config.pushAtKeyPath('foo.bar.baz', 'b')).toBe(2)
+    expect(atom.config.get('foo.bar.baz')).toEqual(['a', 'b'])
+    expect(observeHandler).toHaveBeenCalledWith(atom.config.get('foo.bar.baz'))
+  })
+})
+
+describe('.unshiftAtKeyPath(keyPath, value)', () => {
+  it('unshifts the given value to the array at the key path and updates observers', () => {
+    atom.config.set('foo.bar.baz', ['b'])
+    const observeHandler = jasmine.createSpy('observeHandler')
+    atom.config.observe('foo.bar.baz', observeHandler)
+    observeHandler.reset()
+
+    expect(atom.config.unshiftAtKeyPath('foo.bar.baz', 'a')).toBe(2)
+    expect(atom.config.get('foo.bar.baz')).toEqual(['a', 'b'])
+    expect(observeHandler).toHaveBeenCalledWith(atom.config.get('foo.bar.baz'))
+  })
+})
+
+describe('.removeAtKeyPath(keyPath, value)', () => {
+  it('removes the given value from the array at the key path and updates observers', () => {
+    atom.config.set('foo.bar.baz', ['a', 'b', 'c'])
+    const observeHandler = jasmine.createSpy('observeHandler')
+    atom.config.observe('foo.bar.baz', observeHandler)
+    observeHandler.reset()
+
+    expect(atom.config.removeAtKeyPath('foo.bar.baz', 'b')).toEqual(['a', 'c'])
+    expect(atom.config.get('foo.bar.baz')).toEqual(['a', 'c'])
+    expect(observeHandler).toHaveBeenCalledWith(atom.config.get('foo.bar.baz'))
+  })
+})
+
+describe('.setDefaults(keyPath, defaults)', () => {
+  it('assigns any previously-unassigned keys to the object at the key path', () => {
+    atom.config.set('foo.bar.baz', { a: 1 })
+    atom.config.setDefaults('foo.bar.baz', { a: 2, b: 3, c: 4 })
+    expect(atom.config.get('foo.bar.baz.a')).toBe(1)
+    expect(atom.config.get('foo.bar.baz.b')).toBe(3)
+    expect(atom.config.get('foo.bar.baz.c')).toBe(4)
+
+    atom.config.setDefaults('foo.quux', { x: 0, y: 1 })
+    expect(atom.config.get('foo.quux.x')).toBe(0)
+    expect(atom.config.get('foo.quux.y')).toBe(1)
+  })
+
+  it('emits an updated event', () => {
+    const updatedCallback = jasmine.createSpy('updated')
+    atom.config.onDidChange('foo.bar.baz.a', updatedCallback)
+    expect(updatedCallback.callCount).toBe(0)
+    atom.config.setDefaults('foo.bar.baz', { a: 2 })
+    expect(updatedCallback.callCount).toBe(1)
+  })
+})
+
+describe('.setSchema(keyPath, schema)', () => {
+  it('creates a properly nested schema', () => {
+    const schema = {
+      type: 'object',
+      properties: {
+        anInt: {
+          type: 'integer',
+          default: 12
+        }
+      }
+    }
+
+    atom.config.setSchema('foo.bar', schema)
+
+    expect(atom.config.getSchema('foo')).toEqual({
+      type: 'object',
+      properties: {
+        bar: {
+          type: 'object',
+          properties: {
+            anInt: {
+              type: 'integer',
+              default: 12
             }
           }
         }
-      })
+      }
     })
+  })
 
-    it('sets defaults specified by the schema', () => {
-      const schema = {
-        type: 'object',
-        properties: {
-          anInt: {
-            type: 'integer',
-            default: 12
-          },
-          anObject: {
-            type: 'object',
-            properties: {
-              nestedInt: {
-                type: 'integer',
-                default: 24
-              },
-              nestedObject: {
-                type: 'object',
-                properties: {
-                  superNestedInt: {
-                    type: 'integer',
-                    default: 36
-                  }
+  it('sets defaults specified by the schema', () => {
+    const schema = {
+      type: 'object',
+      properties: {
+        anInt: {
+          type: 'integer',
+          default: 12
+        },
+        anObject: {
+          type: 'object',
+          properties: {
+            nestedInt: {
+              type: 'integer',
+              default: 24
+            },
+            nestedObject: {
+              type: 'object',
+              properties: {
+                superNestedInt: {
+                  type: 'integer',
+                  default: 36
                 }
               }
             }
           }
         }
       }
+    }
 
-      atom.config.setSchema('foo.bar', schema)
-      expect(atom.config.get('foo.bar.anInt')).toBe(12)
-      expect(atom.config.get('foo.bar.anObject')).toEqual({
-        nestedInt: 24,
-        nestedObject: {
-          superNestedInt: 36
-        }
-      })
-
-      expect(atom.config.get('foo')).toEqual({
-        bar: {
-          anInt: 12,
-          anObject: {
-            nestedInt: 24,
-            nestedObject: {
-              superNestedInt: 36
-            }
-          }
-        }
-      })
-      atom.config.set('foo.bar.anObject.nestedObject.superNestedInt', 37)
-      expect(atom.config.get('foo')).toEqual({
-        bar: {
-          anInt: 12,
-          anObject: {
-            nestedInt: 24,
-            nestedObject: {
-              superNestedInt: 37
-            }
-          }
-        }
-      })
-    })
-
-    it('can set a non-object schema', () => {
-      const schema = {
-        type: 'integer',
-        default: 12
+    atom.config.setSchema('foo.bar', schema)
+    expect(atom.config.get('foo.bar.anInt')).toBe(12)
+    expect(atom.config.get('foo.bar.anObject')).toEqual({
+      nestedInt: 24,
+      nestedObject: {
+        superNestedInt: 36
       }
-
-      atom.config.setSchema('foo.bar.anInt', schema)
-      expect(atom.config.get('foo.bar.anInt')).toBe(12)
-      expect(atom.config.getSchema('foo.bar.anInt')).toEqual({
-        type: 'integer',
-        default: 12
-      })
     })
 
-    it('allows the schema to be retrieved via ::getSchema', () => {
-      const schema = {
+    expect(atom.config.get('foo')).toEqual({
+      bar: {
+        anInt: 12,
+        anObject: {
+          nestedInt: 24,
+          nestedObject: {
+            superNestedInt: 36
+          }
+        }
+      }
+    })
+    atom.config.set('foo.bar.anObject.nestedObject.superNestedInt', 37)
+    expect(atom.config.get('foo')).toEqual({
+      bar: {
+        anInt: 12,
+        anObject: {
+          nestedInt: 24,
+          nestedObject: {
+            superNestedInt: 37
+          }
+        }
+      }
+    })
+  })
+
+  it('can set a non-object schema', () => {
+    const schema = {
+      type: 'integer',
+      default: 12
+    }
+
+    atom.config.setSchema('foo.bar.anInt', schema)
+    expect(atom.config.get('foo.bar.anInt')).toBe(12)
+    expect(atom.config.getSchema('foo.bar.anInt')).toEqual({
+      type: 'integer',
+      default: 12
+    })
+  })
+
+  it('allows the schema to be retrieved via ::getSchema', () => {
+    const schema = {
+      type: 'object',
+      properties: {
+        anInt: {
+          type: 'integer',
+          default: 12
+        }
+      }
+    }
+
+    atom.config.setSchema('foo.bar', schema)
+
+    expect(atom.config.getSchema('foo.bar')).toEqual({
+      type: 'object',
+      properties: {
+        anInt: {
+          type: 'integer',
+          default: 12
+        }
+      }
+    })
+
+    expect(atom.config.getSchema('foo.bar.anInt')).toEqual({
+      type: 'integer',
+      default: 12
+    })
+
+    expect(atom.config.getSchema('foo.baz')).toEqual({ type: 'any' })
+    expect(atom.config.getSchema('foo.bar.anInt.baz')).toBe(null)
+  })
+
+  it('respects the schema for scoped settings', () => {
+    const schema = {
+      type: 'string',
+      default: 'ok',
+      scopes: {
+        '.source.js': {
+          default: 'omg'
+        }
+      }
+    }
+    atom.config.setSchema('foo.bar.str', schema)
+
+    expect(atom.config.get('foo.bar.str')).toBe('ok')
+    expect(atom.config.get('foo.bar.str', { scope: ['.source.js'] })).toBe('omg')
+    expect(atom.config.get('foo.bar.str', { scope: ['.source.coffee'] })).toBe('ok')
+  })
+
+  describe('when a schema is added after config values have been set', () => {
+    let schema = null
+    beforeEach(() => {
+      schema = {
         type: 'object',
         properties: {
-          anInt: {
+          int: {
             type: 'integer',
-            default: 12
+            default: 2
+          },
+          str: {
+            type: 'string',
+            default: 'def'
           }
         }
       }
+    })
+
+    it('respects the new schema when values are set', () => {
+      expect(atom.config.set('foo.bar.str', 'global')).toBe(true)
+      expect(
+        atom.config.set('foo.bar.str', 'scoped', {
+          scopeSelector: '.source.js'
+        })
+      ).toBe(true)
+      expect(atom.config.get('foo.bar.str')).toBe('global')
+      expect(atom.config.get('foo.bar.str', { scope: ['.source.js'] })).toBe('scoped')
+
+      expect(atom.config.set('foo.bar.noschema', 'nsGlobal')).toBe(true)
+      expect(
+        atom.config.set('foo.bar.noschema', 'nsScoped', {
+          scopeSelector: '.source.js'
+        })
+      ).toBe(true)
+      expect(atom.config.get('foo.bar.noschema')).toBe('nsGlobal')
+      expect(atom.config.get('foo.bar.noschema', { scope: ['.source.js'] })).toBe('nsScoped')
+
+      expect(atom.config.set('foo.bar.int', 'nope')).toBe(true)
+      expect(
+        atom.config.set('foo.bar.int', 'notanint', {
+          scopeSelector: '.source.js'
+        })
+      ).toBe(true)
+      expect(
+        atom.config.set('foo.bar.int', 23, {
+          scopeSelector: '.source.coffee'
+        })
+      ).toBe(true)
+      expect(atom.config.get('foo.bar.int')).toBe('nope')
+      expect(atom.config.get('foo.bar.int', { scope: ['.source.js'] })).toBe('notanint')
+      expect(atom.config.get('foo.bar.int', { scope: ['.source.coffee'] })).toBe(23)
 
       atom.config.setSchema('foo.bar', schema)
 
-      expect(atom.config.getSchema('foo.bar')).toEqual({
-        type: 'object',
-        properties: {
-          anInt: {
-            type: 'integer',
-            default: 12
-          }
-        }
-      })
+      expect(atom.config.get('foo.bar.str')).toBe('global')
+      expect(atom.config.get('foo.bar.str', { scope: ['.source.js'] })).toBe('scoped')
+      expect(atom.config.get('foo.bar.noschema')).toBe('nsGlobal')
+      expect(atom.config.get('foo.bar.noschema', { scope: ['.source.js'] })).toBe('nsScoped')
 
-      expect(atom.config.getSchema('foo.bar.anInt')).toEqual({
-        type: 'integer',
-        default: 12
-      })
-
-      expect(atom.config.getSchema('foo.baz')).toEqual({ type: 'any' })
-      expect(atom.config.getSchema('foo.bar.anInt.baz')).toBe(null)
+      expect(atom.config.get('foo.bar.int')).toBe(2)
+      expect(atom.config.get('foo.bar.int', { scope: ['.source.js'] })).toBe(2)
+      expect(atom.config.get('foo.bar.int', { scope: ['.source.coffee'] })).toBe(23)
     })
 
-    it('respects the schema for scoped settings', () => {
-      const schema = {
-        type: 'string',
-        default: 'ok',
-        scopes: {
-          '.source.js': {
-            default: 'omg'
-          }
-        }
-      }
-      atom.config.setSchema('foo.bar.str', schema)
+    it('sets all values that adhere to the schema', () => {
+      expect(atom.config.set('foo.bar.int', 10)).toBe(true)
+      expect(atom.config.set('foo.bar.int', 15, { scopeSelector: '.source.js' })).toBe(true)
+      expect(
+        atom.config.set('foo.bar.int', 23, {
+          scopeSelector: '.source.coffee'
+        })
+      ).toBe(true)
+      expect(atom.config.get('foo.bar.int')).toBe(10)
+      expect(atom.config.get('foo.bar.int', { scope: ['.source.js'] })).toBe(15)
+      expect(atom.config.get('foo.bar.int', { scope: ['.source.coffee'] })).toBe(23)
 
-      expect(atom.config.get('foo.bar.str')).toBe('ok')
-      expect(atom.config.get('foo.bar.str', { scope: ['.source.js'] })).toBe('omg')
-      expect(atom.config.get('foo.bar.str', { scope: ['.source.coffee'] })).toBe('ok')
+      atom.config.setSchema('foo.bar', schema)
+
+      expect(atom.config.get('foo.bar.int')).toBe(10)
+      expect(atom.config.get('foo.bar.int', { scope: ['.source.js'] })).toBe(15)
+      expect(atom.config.get('foo.bar.int', { scope: ['.source.coffee'] })).toBe(23)
     })
-
-    describe('when a schema is added after config values have been set', () => {
-      let schema = null
-      beforeEach(() => {
-        schema = {
-          type: 'object',
-          properties: {
-            int: {
-              type: 'integer',
-              default: 2
-            },
-            str: {
-              type: 'string',
-              default: 'def'
-            }
-          }
-        }
-      })
-
-      it('respects the new schema when values are set', () => {
-        expect(atom.config.set('foo.bar.str', 'global')).toBe(true)
-        expect(
-          atom.config.set('foo.bar.str', 'scoped', {
-            scopeSelector: '.source.js'
-          })
-        ).toBe(true)
-        expect(atom.config.get('foo.bar.str')).toBe('global')
-        expect(atom.config.get('foo.bar.str', { scope: ['.source.js'] })).toBe('scoped')
-
-        expect(atom.config.set('foo.bar.noschema', 'nsGlobal')).toBe(true)
-        expect(
-          atom.config.set('foo.bar.noschema', 'nsScoped', {
-            scopeSelector: '.source.js'
-          })
-        ).toBe(true)
-        expect(atom.config.get('foo.bar.noschema')).toBe('nsGlobal')
-        expect(atom.config.get('foo.bar.noschema', { scope: ['.source.js'] })).toBe('nsScoped')
-
-        expect(atom.config.set('foo.bar.int', 'nope')).toBe(true)
-        expect(
-          atom.config.set('foo.bar.int', 'notanint', {
-            scopeSelector: '.source.js'
-          })
-        ).toBe(true)
-        expect(
-          atom.config.set('foo.bar.int', 23, {
-            scopeSelector: '.source.coffee'
-          })
-        ).toBe(true)
-        expect(atom.config.get('foo.bar.int')).toBe('nope')
-        expect(atom.config.get('foo.bar.int', { scope: ['.source.js'] })).toBe('notanint')
-        expect(atom.config.get('foo.bar.int', { scope: ['.source.coffee'] })).toBe(23)
-
-        atom.config.setSchema('foo.bar', schema)
-
-        expect(atom.config.get('foo.bar.str')).toBe('global')
-        expect(atom.config.get('foo.bar.str', { scope: ['.source.js'] })).toBe('scoped')
-        expect(atom.config.get('foo.bar.noschema')).toBe('nsGlobal')
-        expect(atom.config.get('foo.bar.noschema', { scope: ['.source.js'] })).toBe('nsScoped')
-
-        expect(atom.config.get('foo.bar.int')).toBe(2)
-        expect(atom.config.get('foo.bar.int', { scope: ['.source.js'] })).toBe(2)
-        expect(atom.config.get('foo.bar.int', { scope: ['.source.coffee'] })).toBe(23)
-      })
-
-      it('sets all values that adhere to the schema', () => {
-        expect(atom.config.set('foo.bar.int', 10)).toBe(true)
-        expect(atom.config.set('foo.bar.int', 15, { scopeSelector: '.source.js' })).toBe(true)
-        expect(
-          atom.config.set('foo.bar.int', 23, {
-            scopeSelector: '.source.coffee'
-          })
-        ).toBe(true)
-        expect(atom.config.get('foo.bar.int')).toBe(10)
-        expect(atom.config.get('foo.bar.int', { scope: ['.source.js'] })).toBe(15)
-        expect(atom.config.get('foo.bar.int', { scope: ['.source.coffee'] })).toBe(23)
-
-        atom.config.setSchema('foo.bar', schema)
-
-        expect(atom.config.get('foo.bar.int')).toBe(10)
-        expect(atom.config.get('foo.bar.int', { scope: ['.source.js'] })).toBe(15)
-        expect(atom.config.get('foo.bar.int', { scope: ['.source.coffee'] })).toBe(23)
-      })
-    })
+  })
 
   //   describe('when the value has an "integer" type', () => {
   //     beforeEach(() => {

@@ -57,7 +57,7 @@ describe('Config', () => {
     }
   })
 
-  describe('.get(keyPath, {scope, sources, excludeSources})', () => {
+  describe('.get(keyPath, {sources, excludeSources})', () => {
     it("allows a key path's value to be read", () => {
       expect(config.set('foo.bar.baz', 42)).to.be.true
       expect(config.get('foo.bar.baz')).to.equal(42)
@@ -777,6 +777,102 @@ describe('Config', () => {
 
       expect(config.set('foo.bar.str_options', 'One')).to.be.false
       expect(config.get('foo.bar.str_options')).to.equal('two')
+    })
+  })
+
+  describe('.save()', () => {
+    it('calls the save callback with any non-default properties', () => {
+      config.set('a.b.c', 1)
+      config.set('a.b.d', 2)
+      config.set('x.y.z', 3)
+      config.setDefaults('a.b', { e: 4, f: 5 })
+
+      config.save()
+      expect(savedSettings).to.deep.equal([{ '*': config.settings }])
+    })
+
+    it('serializes properties in alphabetical order', () => {
+      config.set('foo', 1)
+      config.set('bar', 2)
+      config.set('baz.foo', 3)
+      config.set('baz.bar', 4)
+
+      savedSettings.length = 0
+      config.save()
+
+      const writtenConfig = savedSettings[0]
+      expect(writtenConfig).to.deep.equal({ '*': config.settings })
+
+      let expectedKeys = ['bar', 'baz', 'foo']
+      let foundKeys = []
+      for (const key in writtenConfig['*']) {
+        if (expectedKeys.includes(key)) {
+          foundKeys.push(key)
+        }
+      }
+      expect(foundKeys).to.deep.equal(expectedKeys)
+      expectedKeys = ['bar', 'foo']
+      foundKeys = []
+      for (const key in writtenConfig['*']['baz']) {
+        if (expectedKeys.includes(key)) {
+          foundKeys.push(key)
+        }
+      }
+      expect(foundKeys).to.deep.equal(expectedKeys)
+    })
+  })
+
+  describe.only('.observe(keyPath)', () => {
+    let [observeHandler, observeSubscription] = []
+
+    beforeEach(() => {
+      observeHandler = sinon.fake()
+      config.clear()
+      config.set('foo.bar.baz', 'value 1')
+      observeSubscription = config.observe('foo.bar.baz', observeHandler)
+    })
+
+    it('fires the given callback with the current value at the keypath', () =>
+      expect(observeHandler.calledWith('value 1')).to.be.true)
+
+    it('fires the callback every time the observed value changes', () => {
+      config.set('foo.bar.baz', 'value 2')
+      expect(observeHandler.calledWith('value 2')).to.be.true
+
+      config.set('foo.bar.baz', 'value 1')
+      expect(observeHandler.calledWith('value 1')).to.be.true
+      // advanceClock(100) // complete pending save that was requested in ::set
+
+      // config.resetUserSettings({ foo: {} })
+      // expect(observeHandler.calledWith(undefined)).to.be.true
+    })
+
+    it('fires the callback when the observed value is deleted', () => {
+      config.set('foo.bar.baz', undefined)
+      expect(observeHandler.calledWith(undefined)).to.be.true
+    })
+
+    it('fires the callback when the full key path goes into and out of existence', () => {
+      config.set('foo.bar', undefined)
+      expect(observeHandler.calledWith(undefined)).to.be.true
+
+      config.set('foo.bar.baz', "i'm back")
+      expect(observeHandler.calledWith("i'm back")).to.be.true
+    })
+
+    it.only('does not fire the callback once the subscription is disposed', () => {
+      observeSubscription.dispose()
+      config.set('foo.bar.baz', 'value 2')
+      expect(observeHandler.called).to.be.false
+    })
+
+    it('does not fire the callback for a similarly named keyPath', () => {
+      const bazCatHandler = jasmine.createSpy('bazCatHandler')
+      observeSubscription = config.observe('foo.bar.bazCat', bazCatHandler)
+
+      bazCatHandler.reset()
+      config.set('foo.bar.baz', 'value 10')
+      expect(bazCatHandler).not.toHaveBeenCalled()
     })
   })
 })
