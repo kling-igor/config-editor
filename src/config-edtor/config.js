@@ -565,6 +565,45 @@ export default class Config {
     })
   }
 
+  resetUserSettings(newSettings, options = {}) {
+    const source = options.source
+    newSettings = Object.assign({}, newSettings)
+    if (newSettings.global != null) {
+      newSettings['*'] = newSettings.global
+      delete newSettings.global
+    }
+
+    // if (newSettings['*'] != null) {
+    //   const scopedSettings = newSettings
+    //   newSettings = newSettings['*']
+    //   delete scopedSettings['*']
+    //   this.resetScopedSettings(scopedSettings, { source })
+    // }
+
+    return this.transact(() => {
+      this._clearUnscopedSettingsForSource(source)
+      this.settingsLoaded = true
+      for (let key in newSettings) {
+        const value = newSettings[key]
+        this.set(key, value, { save: false, source })
+      }
+      if (this.pendingOperations.length) {
+        for (let op of this.pendingOperations) {
+          op()
+        }
+        this.pendingOperations = []
+      }
+    })
+  }
+
+  _clearUnscopedSettingsForSource(source) {
+    if (source === this.projectFile) {
+      this.projectSettings = {}
+    } else {
+      this.settings = {}
+    }
+  }
+
   // Private: Suppress calls to handler functions registered with {::onDidChange}
   // and {::observe} for the duration of the {Promise} returned by `callback`.
   // After the {Promise} is either resolved or rejected, handlers will be called
