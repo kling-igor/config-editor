@@ -822,7 +822,7 @@ describe('Config', () => {
     })
   })
 
-  describe.only('.observe(keyPath)', () => {
+  describe('.observe(keyPath)', () => {
     let [observeHandler, observeSubscription] = []
 
     beforeEach(() => {
@@ -860,19 +860,97 @@ describe('Config', () => {
       expect(observeHandler.calledWith("i'm back")).to.be.true
     })
 
-    it.only('does not fire the callback once the subscription is disposed', () => {
+    it('does not fire the callback once the subscription is disposed', () => {
       observeSubscription.dispose()
       config.set('foo.bar.baz', 'value 2')
       expect(observeHandler.called).to.be.false
     })
 
     it('does not fire the callback for a similarly named keyPath', () => {
-      const bazCatHandler = jasmine.createSpy('bazCatHandler')
+      const bazCatHandler = sinon.fake()
       observeSubscription = config.observe('foo.bar.bazCat', bazCatHandler)
 
-      bazCatHandler.reset()
       config.set('foo.bar.baz', 'value 10')
-      expect(bazCatHandler).not.toHaveBeenCalled()
+      expect(bazCatHandler.called).to.be.false
+    })
+  })
+
+  describe('.onDidChange(keyPath)', () => {
+    let observeHandler = []
+
+    describe('when a keyPath is specified', () => {
+      beforeEach(() => {
+        observeHandler = sinon.fake()
+        config.set('foo.bar.baz', 'value 1')
+        config.onDidChange('foo.bar.baz', observeHandler)
+      })
+
+      it('does not fire the given callback with the current value at the keypath', () =>
+        expect(observeHandler.called).to.be.false)
+
+      it('fires the callback every time the observed value changes', () => {
+        config.set('foo.bar.baz', 'value 2')
+        expect(
+          observeHandler.calledWith({
+            newValue: 'value 2',
+            oldValue: 'value 1'
+          })
+        ).to.be.true
+
+        // observeHandler.andCallFake(() => {
+        //   throw new Error('oops')
+        // })
+        // expect(() => config.set('foo.bar.baz', 'value 1')).toThrow('oops')
+        // expect(observeHandler).toHaveBeenCalledWith({
+        //   newValue: 'value 1',
+        //   oldValue: 'value 2'
+        // })
+
+        // Regression: exception in earlier handler shouldn't put observer
+        // into a bad state.
+        config.set('something.else', 'new value')
+        expect(observeHandler.called).to.be.false
+      })
+    })
+
+    describe.only('when a keyPath is not specified', () => {
+      beforeEach(() => {
+        observeHandler = ({ newValue, oldValue }) => {
+          console.log(`NEW: ${JSON.stringify(newValue)}; OLD: ${JSON.stringify(oldValue)}`)
+        } //sinon.fake()
+        config.set('foo.bar.baz', 'value 1')
+        config.onDidChange(observeHandler)
+      })
+
+      it('does not fire the given callback initially', () => expect(observeHandler.called).to.be.false)
+
+      it.only('fires the callback every time any value changes', () => {
+        config.set('foo.bar.baz', 'value 2')
+        // expect(observeHandler.called).to.be.true
+        // expect(
+        //   observeHandler.calledWith({
+        //     newValue: 'value 2',
+        //     oldValue: 'value 1'
+        //   })
+        // ).to.be.true
+
+        // expect(observeHandler.mostRecentCall.args[0].newValue.foo.bar.baz).toBe('value 2')
+        // expect(observeHandler.mostRecentCall.args[0].oldValue.foo.bar.baz).toBe('value 1')
+
+        config.set('foo.bar.baz', 'value 1')
+        // expect(observeHandler.called).to.be.true
+
+        // expect(observeHandler.mostRecentCall.args[0].newValue.foo.bar.baz).toBe('value 1')
+        // expect(observeHandler.mostRecentCall.args[0].oldValue.foo.bar.baz).toBe('value 2')
+
+        config.set('foo.bar.int', 1)
+        // expect(observeHandler.called).to.be.true
+
+        // expect(observeHandler.mostRecentCall.args[0].newValue.foo.bar.int).toBe(1)
+        // expect(observeHandler.mostRecentCall.args[0].oldValue.foo.bar.int).toBe(undefined)
+
+        expect(true).to.eq(true)
+      })
     })
   })
 })

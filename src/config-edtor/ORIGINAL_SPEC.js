@@ -575,72 +575,72 @@ describe('Config', () => {
     })
   })
 */
-    describe('.onDidChange(keyPath, {scope})', () => {
-      let observeHandler = []
+    // describe('.onDidChange(keyPath, {scope})', () => {
+    //   let observeHandler = []
 
-      describe('when a keyPath is specified', () => {
-        beforeEach(() => {
-          observeHandler = jasmine.createSpy('observeHandler')
-          atom.config.set('foo.bar.baz', 'value 1')
-          atom.config.onDidChange('foo.bar.baz', observeHandler)
-        })
+    //   describe('when a keyPath is specified', () => {
+    //     beforeEach(() => {
+    //       observeHandler = jasmine.createSpy('observeHandler')
+    //       atom.config.set('foo.bar.baz', 'value 1')
+    //       atom.config.onDidChange('foo.bar.baz', observeHandler)
+    //     })
 
-        it('does not fire the given callback with the current value at the keypath', () =>
-          expect(observeHandler).not.toHaveBeenCalled())
+    //     it('does not fire the given callback with the current value at the keypath', () =>
+    //       expect(observeHandler).not.toHaveBeenCalled())
 
-        it('fires the callback every time the observed value changes', () => {
-          atom.config.set('foo.bar.baz', 'value 2')
-          expect(observeHandler).toHaveBeenCalledWith({
-            newValue: 'value 2',
-            oldValue: 'value 1'
-          })
-          observeHandler.reset()
-          observeHandler.andCallFake(() => {
-            throw new Error('oops')
-          })
-          expect(() => atom.config.set('foo.bar.baz', 'value 1')).toThrow('oops')
-          expect(observeHandler).toHaveBeenCalledWith({
-            newValue: 'value 1',
-            oldValue: 'value 2'
-          })
-          observeHandler.reset()
+    //     it('fires the callback every time the observed value changes', () => {
+    //       atom.config.set('foo.bar.baz', 'value 2')
+    //       expect(observeHandler).toHaveBeenCalledWith({
+    //         newValue: 'value 2',
+    //         oldValue: 'value 1'
+    //       })
+    //       observeHandler.reset()
+    //       observeHandler.andCallFake(() => {
+    //         throw new Error('oops')
+    //       })
+    //       expect(() => atom.config.set('foo.bar.baz', 'value 1')).toThrow('oops')
+    //       expect(observeHandler).toHaveBeenCalledWith({
+    //         newValue: 'value 1',
+    //         oldValue: 'value 2'
+    //       })
+    //       observeHandler.reset()
 
-          // Regression: exception in earlier handler shouldn't put observer
-          // into a bad state.
-          atom.config.set('something.else', 'new value')
-          expect(observeHandler).not.toHaveBeenCalled()
-        })
-      })
+    //       // Regression: exception in earlier handler shouldn't put observer
+    //       // into a bad state.
+    //       atom.config.set('something.else', 'new value')
+    //       expect(observeHandler).not.toHaveBeenCalled()
+    //     })
+    //   })
 
-      describe('when a keyPath is not specified', () => {
-        beforeEach(() => {
-          observeHandler = jasmine.createSpy('observeHandler')
-          atom.config.set('foo.bar.baz', 'value 1')
-          atom.config.onDidChange(observeHandler)
-        })
+    //   describe('when a keyPath is not specified', () => {
+    //     beforeEach(() => {
+    //       observeHandler = jasmine.createSpy('observeHandler')
+    //       atom.config.set('foo.bar.baz', 'value 1')
+    //       atom.config.onDidChange(observeHandler)
+    //     })
 
-        it('does not fire the given callback initially', () => expect(observeHandler).not.toHaveBeenCalled())
+    //     it('does not fire the given callback initially', () => expect(observeHandler).not.toHaveBeenCalled())
 
-        it('fires the callback every time any value changes', () => {
-          observeHandler.reset() // clear the initial call
-          atom.config.set('foo.bar.baz', 'value 2')
-          expect(observeHandler).toHaveBeenCalled()
-          expect(observeHandler.mostRecentCall.args[0].newValue.foo.bar.baz).toBe('value 2')
-          expect(observeHandler.mostRecentCall.args[0].oldValue.foo.bar.baz).toBe('value 1')
+    //     it('fires the callback every time any value changes', () => {
+    //       observeHandler.reset() // clear the initial call
+    //       atom.config.set('foo.bar.baz', 'value 2')
+    //       expect(observeHandler).toHaveBeenCalled()
+    //       expect(observeHandler.mostRecentCall.args[0].newValue.foo.bar.baz).toBe('value 2')
+    //       expect(observeHandler.mostRecentCall.args[0].oldValue.foo.bar.baz).toBe('value 1')
 
-          observeHandler.reset()
-          atom.config.set('foo.bar.baz', 'value 1')
-          expect(observeHandler).toHaveBeenCalled()
-          expect(observeHandler.mostRecentCall.args[0].newValue.foo.bar.baz).toBe('value 1')
-          expect(observeHandler.mostRecentCall.args[0].oldValue.foo.bar.baz).toBe('value 2')
+    //       observeHandler.reset()
+    //       atom.config.set('foo.bar.baz', 'value 1')
+    //       expect(observeHandler).toHaveBeenCalled()
+    //       expect(observeHandler.mostRecentCall.args[0].newValue.foo.bar.baz).toBe('value 1')
+    //       expect(observeHandler.mostRecentCall.args[0].oldValue.foo.bar.baz).toBe('value 2')
 
-          observeHandler.reset()
-          atom.config.set('foo.bar.int', 1)
-          expect(observeHandler).toHaveBeenCalled()
-          expect(observeHandler.mostRecentCall.args[0].newValue.foo.bar.int).toBe(1)
-          expect(observeHandler.mostRecentCall.args[0].oldValue.foo.bar.int).toBe(undefined)
-        })
-      })
+    //       observeHandler.reset()
+    //       atom.config.set('foo.bar.int', 1)
+    //       expect(observeHandler).toHaveBeenCalled()
+    //       expect(observeHandler.mostRecentCall.args[0].newValue.foo.bar.int).toBe(1)
+    //       expect(observeHandler.mostRecentCall.args[0].oldValue.foo.bar.int).toBe(undefined)
+    //     })
+    //   })
 
       describe("when a 'scope' is given", () =>
         it('calls the supplied callback when the value at the descriptor/keypath changes', () => {
