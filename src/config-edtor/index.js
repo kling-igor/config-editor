@@ -290,11 +290,15 @@ const SearchResultCount = ({ count }) => {
 
 @observer
 export default class ConfigEditor extends Component {
-  elements = []
+  // элементы отображения заголовков секций
+  topicElements = []
+
+  // элементы отображения форм
+  settingsElements = []
 
   briefs = []
 
-  state = { query: '', searchResultCount: null }
+  state = { query: '', searchResultCount: null, elements: [] }
 
   constructor(props) {
     super(props)
@@ -304,6 +308,7 @@ export default class ConfigEditor extends Component {
     const topics = {}
 
     // по всем корневым разделам (core, editor и т.д.)
+    // TODO: возможно следует сократить количество обходов схемы!!!
     for (const key of Object.keys(config.schema.properties)) {
       topics[key] = {
         title: config.schema.properties[key].title,
@@ -334,39 +339,71 @@ export default class ConfigEditor extends Component {
       }
     }
 
-    Object.entries(topics).forEach(([_, { properties }]) => {
+    // TODO: возможно следует сократить количество обходов схемы!!!
+    // заранее сохраняем элементы отображения заголовков секций
+    this.topicElements = Object.entries(topics).map(([key, { title, description }]) => {
+      return {
+        key,
+        Element: (
+          <div key={key}>
+            <SectionLabelStyle>{title}</SectionLabelStyle>
+            {description && <SectionDescriptionStyle>{description}</SectionDescriptionStyle>}
+          </div>
+        )
+      }
+    })
+
+    // TODO: возможно следует сократить количество обходов схемы!!!
+    // заранее сохраняем эелементы форм одним массивом и данные для поиска
+    Object.entries(topics).forEach(([key, { properties }]) => {
       properties.forEach(item => {
-        const {
-          key,
-          schema: { description }
-        } = item
-        const label = uncamelcase(key.split('.').pop())
-        this.briefs.push({ key, label, description })
+        const { key: propertyKey, schema, value, setValue } = item
+        const label = uncamelcase(propertyKey.split('.').pop())
+        const FormComponent = componentMaker(schema)({ label, ...{ ...schema } })
+
+        this.briefs.push({ key: propertyKey, label, description: schema.description })
+
+        this.settingsElements.push({
+          key: propertyKey,
+          Element: <FormComponent key={propertyKey} value={value} onChange={setValue} />
+        })
       })
     })
 
-    this.elements = Object.entries(topics).map(([key, { title, description, properties }]) => {
-      return (
-        <div key={key}>
-          <SectionLabelStyle>{title}</SectionLabelStyle>
-          {description && <SectionDescriptionStyle>{description}</SectionDescriptionStyle>}
-          {properties.map(item => {
-            const { key: propertyKey, schema, value, setValue } = item
-            const label = uncamelcase(propertyKey.split('.').pop())
-            const FormComponent = componentMaker(schema)({ label, ...{ ...schema } })
+    // this.elements = Object.entries(topics).map(([key, { title, description, properties }]) => {
+    //   return (
+    //     <div key={key}>
+    //       <SectionLabelStyle>{title}</SectionLabelStyle>
+    //       {description && <SectionDescriptionStyle>{description}</SectionDescriptionStyle>}
+    //       {properties.map(item => {
+    //         const { key: propertyKey, schema, value, setValue } = item
+    //         const label = uncamelcase(propertyKey.split('.').pop())
+    //         const FormComponent = componentMaker(schema)({ label, ...{ ...schema } })
 
-            return <FormComponent key={propertyKey} value={value} onChange={setValue} />
-          })}
-        </div>
-      )
-    })
+    //         return <FormComponent key={propertyKey} value={value} onChange={setValue} />
+    //       })}
+    //     </div>
+    //   )
+    // })
 
     this.state.searchResultCount = this.briefs.length
 
     this.fuse = new Fuse(this.briefs, settingsSearchOptions)
+
+    this.state.elements = this.makeDefaultContent()
   }
 
-  makeDefaultContent = () => {}
+  makeDefaultContent = () => {
+    let elements = []
+    this.topicElements.forEach(({ key: topicKey, Element: TopicElement }) => {
+      elements = [...elements, TopicElement]
+      const settingsElements = this.settingsElements
+        .filter(({ key }) => key.startsWith(`${topicKey}.`))
+        .map(({ Element: SettingsElement }) => SettingsElement)
+      elements = [...elements, ...settingsElements]
+    })
+    return elements
+  }
 
   handleQueryChange = event => {
     this.setState({ query: event.target.value })
@@ -374,15 +411,16 @@ export default class ConfigEditor extends Component {
     if (event.target.value.length > 0) {
       const result = this.fuse.search(event.target.value)
 
-      console.log('result:', result)
-
       if (result.length === 0) {
-        this.setState({ searchResultCount: 'No' })
+        this.setState({ searchResultCount: 'No', elements: [] })
       } else {
-        this.setState({ searchResultCount: result.length })
+        const elements = this.settingsElements
+          .filter(({ key }) => !!result.find(({ key: resultKey }) => resultKey === key))
+          .map(({ Element }) => Element)
+        this.setState({ searchResultCount: result.length, elements })
       }
     } else {
-      this.setState({ searchResultCount: this.briefs.length })
+      this.setState({ searchResultCount: this.briefs.length, elements: this.makeDefaultContent() })
     }
   }
 
@@ -399,7 +437,7 @@ export default class ConfigEditor extends Component {
           value={this.state.query}
           // onKeyDown={onKeyDown}
         />
-        {this.elements}
+        {this.state.elements}
       </div>
     )
   }
