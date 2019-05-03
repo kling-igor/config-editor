@@ -13,19 +13,39 @@ import { isPlainObject, uncamelcase } from './utils'
 
 const LabelStyle = styled.p`
   margin-bottom: 2px;
+  color: #9da5b4;
+  font-weight: normal;
   font-size: 1.2em;
 `
 
-const DescriptionStyle = styled.div`
-  font-size: 0.9em;
-  margin-bottom: 4px;
-  opacity: 0.6;
+const SectionLabelStyle = styled.p`
+  color: white;
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+  font-weight: bold;
+  font-size: 1.75em;
 `
 
-const CheckboxDescriptionStyle = styled.div`
-  font-size: 0.9em;
+const SectionDescriptionStyle = styled.p`
+  color: #9da5b4;
+  font-size: 12px;
+  margin-bottom: 0px;
+`
+
+const DescriptionStyle = styled.p`
+  font-size: 12px;
+  margin-bottom: 0px;
+  color: rgba(157, 165, 180, 0.6);
+`
+
+const CheckboxDescriptionStyle = styled(DescriptionStyle)`
   margin-left: 26px;
-  opacity: 0.6;
+  margin-bottom: 0px;
+`
+
+const ComponentContainer = styled.div`
+  margin-top: 8px;
+  margin-bottom: 8px;
 `
 
 const Description = Style => ({ children }) => {
@@ -51,12 +71,12 @@ const makeCheckboxComponent = ({ label, default: defaultValue, description }) =>
   const tooltip = <span>{`Default: ${defaultValue}`}</span>
 
   return (
-    <>
+    <ComponentContainer>
       <Tooltip content={tooltip} intent={Intent.PRIMARY} position={Position.BOTTOM_LEFT}>
         <Checkbox className="vision" label={label} checked={value} onChange={onchange} />
       </Tooltip>
       <CheckboxDescription>{description}</CheckboxDescription>
-    </>
+    </ComponentContainer>
   )
 }
 
@@ -97,7 +117,7 @@ const makeNumberInputComponent = ({ label, default: defaultValue, description, m
   }
 
   return (
-    <>
+    <ComponentContainer>
       <LabelStyle>{label}</LabelStyle>
       <RegularDescription>{description}</RegularDescription>
       <Tooltip content={tooltip} intent={Intent.PRIMARY} usePortal={true} position={Position.TOP_LEFT}>
@@ -113,7 +133,7 @@ const makeNumberInputComponent = ({ label, default: defaultValue, description, m
           max={maximum}
         />
       </Tooltip>
-    </>
+    </ComponentContainer>
   )
 }
 
@@ -154,7 +174,7 @@ const makeIntegerInputComponent = ({ label, default: defaultValue, description, 
   }
 
   return (
-    <>
+    <ComponentContainer>
       <LabelStyle>{label}</LabelStyle>
       <RegularDescription>{description}</RegularDescription>
       <Tooltip intent={Intent.PRIMARY} content={tooltip} position={Position.TOP_LEFT}>
@@ -172,7 +192,7 @@ const makeIntegerInputComponent = ({ label, default: defaultValue, description, 
           majorStepSize={null}
         />
       </Tooltip>
-    </>
+    </ComponentContainer>
   )
 }
 
@@ -192,13 +212,13 @@ const makeOptionsComponent = ({ label, enum: enumValues, default: defaultValue, 
   })
 
   return (
-    <>
+    <ComponentContainer>
       <LabelStyle>{label}</LabelStyle>
       <RegularDescription>{description}</RegularDescription>
       <Tooltip content={tooltip} intent={Intent.PRIMARY} position={Position.TOP_LEFT}>
         <HTMLSelect options={options} fill onChange={onchange} value={value} />
       </Tooltip>
-    </>
+    </ComponentContainer>
   )
 }
 
@@ -210,11 +230,11 @@ const COMPONENT_MAKERS = {
 
 const makeDefaultComponent = ({ label, default: defaultValue, description }) => ({ value, onChange }) => {
   return (
-    <div>
+    <ComponentContainer>
       <h3>{label}</h3>
       <p>{description}</p>
       <p>{value.toString()}</p>
-    </div>
+    </ComponentContainer>
   )
 }
 
@@ -276,15 +296,12 @@ export default class ConfigEditor extends Component {
     this.elements = Object.entries(divisions).map(([key, { title, description, properties }]) => {
       return (
         <div key={key}>
-          <h1 key={key}>{title}</h1>
-          {description && <p>{description}</p>}
+          <SectionLabelStyle>{title}</SectionLabelStyle>
+          {description && <SectionDescriptionStyle>{description}</SectionDescriptionStyle>}
           {properties.map(item => {
             const { key: propertyKey, schema, value, setValue } = item
-
             const label = uncamelcase(propertyKey.split('.').pop())
-
             const FormComponent = componentMaker(schema)({ label, ...{ ...schema } })
-
             return <FormComponent key={propertyKey} value={value} onChange={setValue} />
           })}
         </div>
@@ -293,6 +310,6 @@ export default class ConfigEditor extends Component {
   }
 
   render() {
-    return <div>{this.elements}</div>
+    return <div className="bp3-dark">{this.elements}</div>
   }
 }

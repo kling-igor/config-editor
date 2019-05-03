@@ -22,7 +22,7 @@ const GlobalStyle = createGlobalStyle`
     margin: 0;
     font-family: Roboto, sans-serif;
     overflow: hidden;
-    background-color: white;
+    background-color: #282c34;
     height: 100%;
     margin: 0;
     overflow: hidden !important;
@@ -44,6 +44,7 @@ const GlobalStyle = createGlobalStyle`
   }
 
   label.bp3-control.bp3-checkbox.vision {
+    color: #9da5b4;
     font-size: 1.2em;
   }
 
