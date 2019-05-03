@@ -9,7 +9,19 @@ import { Tooltip, Position, Intent } from '@blueprintjs/core'
 import styled, { withTheme } from 'styled-components'
 import ReactMarkdown from 'react-markdown'
 
+import Fuse from 'fuse.js'
 import { isPlainObject, uncamelcase } from './utils'
+
+const settingsSearchOptions = {
+  shouldSort: true,
+  tokenize: true,
+  threshold: 0,
+  location: 0,
+  distance: 0,
+  maxPatternLength: 32,
+  minMatchCharLength: 1,
+  keys: ['label', 'description']
+}
 
 const LabelStyle = styled.p`
   margin-bottom: 2px;
@@ -252,6 +264,8 @@ const componentMaker = schema => {
 }
 
 const SearchResultCount = ({ count }) => {
+  if (count == null) return null
+
   return (
     <div
       style={{
@@ -278,18 +292,20 @@ const SearchResultCount = ({ count }) => {
 export default class ConfigEditor extends Component {
   elements = []
 
-  state = { query: '' }
+  briefs = []
+
+  state = { query: '', searchResultCount: null }
 
   constructor(props) {
     super(props)
 
     const { config } = props
 
-    const divisions = {}
+    const topics = {}
 
     // по всем корневым разделам (core, editor и т.д.)
     for (const key of Object.keys(config.schema.properties)) {
-      divisions[key] = {
+      topics[key] = {
         title: config.schema.properties[key].title,
         description: config.schema.properties[key].description,
         properties: []
@@ -314,11 +330,11 @@ export default class ConfigEditor extends Component {
           disposable = config.observe(propertyKey, this.updateValue)
         })()
 
-        divisions[key].properties.push(store)
+        topics[key].properties.push(store)
       }
     }
 
-    this.elements = Object.entries(divisions).map(([key, { title, description, properties }]) => {
+    this.elements = Object.entries(topics).map(([key, { title, description, properties }]) => {
       return (
         <div key={key}>
           <SectionLabelStyle>{title}</SectionLabelStyle>
@@ -327,16 +343,36 @@ export default class ConfigEditor extends Component {
             const { key: propertyKey, schema, value, setValue } = item
             const label = uncamelcase(propertyKey.split('.').pop())
             const FormComponent = componentMaker(schema)({ label, ...{ ...schema } })
+
+            this.briefs.push({ key: propertyKey, label, description: schema.description })
+
             return <FormComponent key={propertyKey} value={value} onChange={setValue} />
           })}
         </div>
       )
     })
+
+    this.state.searchResultCount = this.briefs.length
+
+    this.fuse = new Fuse(this.briefs, settingsSearchOptions)
   }
 
   handleQueryChange = event => {
-    console.log(event.target.value)
     this.setState({ query: event.target.value })
+
+    if (event.target.value.length > 0) {
+      const result = this.fuse.search(event.target.value)
+
+      console.log('result:', result)
+
+      if (result.length === 0) {
+        this.setState({ searchResultCount: 'No' })
+      } else {
+        this.setState({ searchResultCount: result.length })
+      }
+    } else {
+      this.setState({ searchResultCount: this.briefs.length })
+    }
   }
 
   render() {
@@ -346,7 +382,7 @@ export default class ConfigEditor extends Component {
           // leftIcon="search"
           onChange={this.handleQueryChange}
           placeholder="Search settings"
-          rightElement={<SearchResultCount count={1071} />}
+          rightElement={<SearchResultCount count={this.state.searchResultCount} />}
           small={true}
           fill={true}
           value={this.state.query}
