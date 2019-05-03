@@ -251,9 +251,34 @@ const componentMaker = schema => {
   return COMPONENT_MAKERS[schema.type] || makeDefaultComponent
 }
 
+const SearchResultCount = ({ count }) => {
+  return (
+    <div
+      style={{
+        display: 'block',
+        backgroundColor: '#444444',
+        color: '#f4f4f4',
+        paddingLeft: '8px',
+        paddingRight: '8px',
+        paddingTop: '2px',
+        paddingBottom: '1px',
+        borderRadius: 2,
+        fontSize: '12px',
+        margin: 0,
+        marginTop: '3px',
+        userSelect: 'none'
+      }}
+    >
+      {`${count} Settings Found`}
+    </div>
+  )
+}
+
 @observer
 export default class ConfigEditor extends Component {
   elements = []
+
+  state = { query: '' }
 
   constructor(props) {
     super(props)
@@ -309,7 +334,26 @@ export default class ConfigEditor extends Component {
     })
   }
 
+  handleQueryChange = event => {
+    console.log(event.target.value)
+    this.setState({ query: event.target.value })
+  }
+
   render() {
-    return <div className="bp3-dark">{this.elements}</div>
+    return (
+      <div className="bp3-dark">
+        <InputGroup
+          // leftIcon="search"
+          onChange={this.handleQueryChange}
+          placeholder="Search settings"
+          rightElement={<SearchResultCount count={1071} />}
+          small={true}
+          fill={true}
+          value={this.state.query}
+          // onKeyDown={onKeyDown}
+        />
+        {this.elements}
+      </div>
+    )
   }
 }
