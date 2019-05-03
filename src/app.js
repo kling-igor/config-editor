@@ -58,7 +58,8 @@ const GlobalStyle = createGlobalStyle`
 const configPath = './config.json'
 const config = new Config({
   saveCallback: settings => {
-    this.applicationDelegate.setUserSettings(settings, configPath)
+    // this.applicationDelegate.setUserSettings(settings, configPath)
+    console.log('SAVE:', settings)
   },
   mainSource: configPath
 })
