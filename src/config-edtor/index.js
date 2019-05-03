@@ -334,6 +334,17 @@ export default class ConfigEditor extends Component {
       }
     }
 
+    Object.entries(topics).forEach(([_, { properties }]) => {
+      properties.forEach(item => {
+        const {
+          key,
+          schema: { description }
+        } = item
+        const label = uncamelcase(key.split('.').pop())
+        this.briefs.push({ key, label, description })
+      })
+    })
+
     this.elements = Object.entries(topics).map(([key, { title, description, properties }]) => {
       return (
         <div key={key}>
@@ -343,8 +354,6 @@ export default class ConfigEditor extends Component {
             const { key: propertyKey, schema, value, setValue } = item
             const label = uncamelcase(propertyKey.split('.').pop())
             const FormComponent = componentMaker(schema)({ label, ...{ ...schema } })
-
-            this.briefs.push({ key: propertyKey, label, description: schema.description })
 
             return <FormComponent key={propertyKey} value={value} onChange={setValue} />
           })}
@@ -356,6 +365,8 @@ export default class ConfigEditor extends Component {
 
     this.fuse = new Fuse(this.briefs, settingsSearchOptions)
   }
+
+  makeDefaultContent = () => {}
 
   handleQueryChange = event => {
     this.setState({ query: event.target.value })
