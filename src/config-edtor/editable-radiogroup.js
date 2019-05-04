@@ -1,70 +1,5 @@
-import '../app.css'
-import React, { Component, PureComponent, useState } from 'react'
-import {
-  Button,
-  ButtonGroup,
-  Intent,
-  Checkbox,
-  FormGroup,
-  InputGroup,
-  Label,
-  HTMLSelect,
-  Position,
-  Tooltip,
-  PanelStack,
-  Divider,
-  Icon
-} from '@blueprintjs/core'
-
-import styled, { createGlobalStyle } from 'styled-components'
-
-const GlobalStyle = createGlobalStyle`
-  html {
-    
-    height: 100%;
-    margin: 0;
-  }
-
-  body {
-    padding: 0;
-    margin: 0;
-    font-family: Roboto, sans-serif;
-    overflow: hidden;
-    background-color: #282c34;
-    height: 100%;
-    margin: 0;
-    overflow: hidden !important;
-  }
-
-  #app {
-    min-height: 100%;
-    position: fixed;
-    width: 100%;
-    height: 100%;
-    left: 0;
-    top: 0;
-
-    padding: 8px;
-  }
-
-  .bp3-control.vision {
-    margin-bottom: 4px;
-  }
-
-  label.bp3-control.bp3-checkbox.vision {
-    color: #9da5b4;
-    font-size: 1.2em;
-  }
-
-  /*иначе погруженные в tooltip формы скукоживаются*/
-  span.bp3-popover-target {
-    display: block;
-  }
-`
-
-/**************************** EDITABLE GROUP *****************************/
-
-const noop = () => {}
+import React, { Component, useState } from 'react'
+import styled from 'styled-components'
 
 const ComponentStyle = styled.div`
   padding: 12;
@@ -112,6 +47,12 @@ const ListItemIconEditButtonStyle = styled.img`
   user-select: none;
 `
 
+const AddItemButtonStyle = styled.button`
+  margin-top: 2px;
+  width: 80px;
+  border-radius: 0px;
+`
+
 const ListItem = props => {
   const [hovering, setHovering] = useState(false)
 
@@ -145,14 +86,19 @@ const ListItem = props => {
   )
 }
 
-export default class App extends Component {
+export default class EditableRadioGroup extends Component {
   state = {
     selectedItem: 0,
-    array: ['http://blackhole.dev.marm.com', 'http://lic.dev.marm.com', 'http://monitoring.dev.marm.com'],
+    array: [],
     editingValue: '',
     previousValue: null, // add new value - no previous value available
     editingIndex: -1, // в случае отказа - если это последнее значение в списке и previousValue: null - обрезаем списокб иначе это было редактирование непоследнего значения - просто возвращаем старое
     uniqe: true // уникально ли вводимое значение
+  }
+
+  constructor(props) {
+    super(props)
+    this.state.array = props.array || []
   }
 
   onOk = () => {
@@ -336,14 +282,13 @@ export default class App extends Component {
 
     if (editingIndex === -1 || editingIndex < array.length - 1 || previousValue != null) {
       return (
-        <button
+        <AddItemButtonStyle
           type="button"
           className="bp3-button bp3-intent-primary bp3-small"
-          style={{ marginTop: '2px', width: '80px', borderRadius: '0px' }}
           onClick={this.onAddPressed}
         >
-          Add URL
-        </button>
+          Add Item
+        </AddItemButtonStyle>
       )
     }
 
@@ -351,14 +296,13 @@ export default class App extends Component {
   }
 
   render() {
+    console.log(this.state)
+
     return (
-      <>
-        <GlobalStyle />
-        <ComponentStyle className="bp3-dark styles-stack">
-          {this.state.array.map((url, index) => this.renderUrl(url, index))}
-          {this.renderAddButton()}
-        </ComponentStyle>
-      </>
+      <ComponentStyle className="bp3-dark">
+        {this.state.array.map((url, index) => this.renderUrl(url, index))}
+        {this.renderAddButton()}
+      </ComponentStyle>
     )
   }
 }
