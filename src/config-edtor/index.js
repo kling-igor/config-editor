@@ -1,7 +1,16 @@
 import React, { Component } from 'react'
 import { action, observable, decorate } from 'mobx'
 import { observer } from 'mobx-react'
-import { Link, Element, Events, animateScroll as scroll, scrollSpy, scroller } from 'react-scroll'
+import {
+  Link,
+  Element,
+  ScrollElement,
+  ScrollLink,
+  Events,
+  animateScroll as scroll,
+  scrollSpy,
+  scroller
+} from 'react-scroll'
 
 import { Checkbox } from '@blueprintjs/core'
 import { FormGroup, InputGroup, NumericInput, Keys } from '@blueprintjs/core'
@@ -307,7 +316,7 @@ const ContentContainerStyle = styled.div`
 `
 
 const IndexContainerStyle = styled.div`
-  width: 200px;
+  width: 300px;
   height: 100%;
   background-color: gray;
   overflow: auto;
@@ -333,6 +342,8 @@ export default class ConfigEditor extends Component {
 
   state = { query: '', searchResultCount: null, elements: [] }
 
+  index = []
+
   constructor(props) {
     super(props)
 
@@ -349,11 +360,16 @@ export default class ConfigEditor extends Component {
         properties: []
       }
 
+      this.index.push({ title: config.schema.properties[key].title, key })
+
       for (const subkey of Object.keys(config.schema.properties[key].properties)) {
         // схема элемента
         const schema = config.schema.properties[key].properties[subkey]
         const propertyKey = `${key}.${subkey}`
         // хранилище для свойста
+
+        const title = uncamelcase(subkey.split('.').pop())
+        this.index.push({ title, key: propertyKey })
 
         const store = new (class {
           key = propertyKey
@@ -378,10 +394,12 @@ export default class ConfigEditor extends Component {
       return {
         key,
         Element: (
-          <div key={key}>
-            <SectionLabelStyle>{title}</SectionLabelStyle>
-            {description && <SectionDescriptionStyle>{description}</SectionDescriptionStyle>}
-          </div>
+          <Element name={key}>
+            <div key={key}>
+              <SectionLabelStyle>{title}</SectionLabelStyle>
+              {description && <SectionDescriptionStyle>{description}</SectionDescriptionStyle>}
+            </div>
+          </Element>
         )
       }
     })
@@ -392,13 +410,13 @@ export default class ConfigEditor extends Component {
       properties.forEach(item => {
         const { key: propertyKey, schema, value, setValue } = item
         const label = uncamelcase(propertyKey.split('.').pop())
-        const FormComponent = componentMaker(schema)({ label, ...{ ...schema } })
+        const FormComponent = ScrollElement(componentMaker(schema)({ label, ...{ ...schema } }))
 
         this.briefs.push({ key: propertyKey, label, description: schema.description })
 
         this.settingsElements.push({
           key: propertyKey,
-          Element: <FormComponent key={propertyKey} value={value} onChange={setValue} />
+          Element: <FormComponent name={propertyKey} key={propertyKey} value={value} onChange={setValue} />
         })
       })
     })
@@ -474,8 +492,45 @@ export default class ConfigEditor extends Component {
           />
         </SearchContainerStyle>
         <ContentContainerStyle>
-          <IndexContainerStyle>Index here...</IndexContainerStyle>
-          <SettingsContainerStyle>{this.state.elements}</SettingsContainerStyle>
+          <IndexContainerStyle>
+            <ul style={{ margin: 8, paddingInlineStart: 0 }}>
+              {this.index.map(item => {
+                const { title, key } = item
+                return (
+                  <Link
+                    activeClass="active"
+                    to={key}
+                    spy={true}
+                    smooth={true}
+                    offset={-100}
+                    duration={500}
+                    containerId="settingsContainer"
+                    onSetActive={data => {
+                      console.log(`set active ${data}`)
+                    }}
+                  >
+                    <li
+                      key={key}
+                      onClick={() => {
+                        console.log(key)
+                      }}
+                      style={{
+                        fontSize: '13px',
+                        listStyleType: 'none',
+                        whiteSpace: 'nowrap',
+                        textOverflow: 'ellipsis',
+                        overflow: 'hidden',
+                        userSelect: 'none'
+                      }}
+                    >
+                      {title}
+                    </li>
+                  </Link>
+                )
+              })}
+            </ul>
+          </IndexContainerStyle>
+          <SettingsContainerStyle id="settingsContainer">{this.state.elements}</SettingsContainerStyle>
         </ContentContainerStyle>
       </div>
     )
