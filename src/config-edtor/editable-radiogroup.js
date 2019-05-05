@@ -1,5 +1,5 @@
 import React, { Component, useState } from 'react'
-import styled from 'styled-components'
+import styled, { withTheme } from 'styled-components'
 import { FormGroup, InputGroup, NumericInput, Keys } from '@blueprintjs/core'
 
 const ComponentStyle = styled.div`
@@ -18,7 +18,13 @@ const ListItemStyle = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: ${({ hovering }) => (hovering ? '#3a3d3e' : 'transparent')};
+  background-color: ${({ theme: { type }, hovering }) => {
+    if (hovering) {
+      if (type === 'dark') return '#3a3d3e'
+
+      return '#e5e5e5'
+    }
+  }};
 `
 
 const ButtonGroupStyle = styled.div`
@@ -31,8 +37,7 @@ const LabelContainerStyle = styled.span`
   display: flex;
   justify-content: flex-start;
   align-items: center;
-  /* width: '350px', */
-  width: calc(100% - 32px);
+  width: calc(100% - 42px);
   overflow: hidden;
 `
 
@@ -54,7 +59,7 @@ const AddItemButtonStyle = styled.button`
   border-radius: 0px;
 `
 
-const ListItem = props => {
+const ListItem = withTheme(props => {
   const [hovering, setHovering] = useState(false)
 
   const handleMouseEnter = () => {
@@ -65,27 +70,40 @@ const ListItem = props => {
     setHovering(false)
   }
 
-  const { value, onEditClick = () => {}, onDeleteClick = () => {}, onSelect, selected } = props
+  const { value, onEditClick = () => {}, onDeleteClick = () => {}, onSelect, selected, theme } = props
 
-  {
-    /* <ListItemStyle pointerEvents="none" hovering={hovering}> */
-  }
+  const suffix = theme.type === 'dark' ? '-dark' : ''
 
   return (
-    <ListItemStyle onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} hovering={hovering}>
+    <ListItemStyle
+      onClick={onSelect}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      hovering={hovering}
+    >
       <LabelContainerStyle>
         <input type="radio" checked={selected} onChange={onSelect} />
         <LabelStyle>{value}</LabelStyle>
       </LabelContainerStyle>
       {hovering && (
         <ButtonGroupStyle>
-          <ListItemIconEditButtonStyle src="assets/ui/edit-dark.svg" width={16} height={16} onClick={onEditClick} />
-          <ListItemIconEditButtonStyle src="assets/ui/close-dark.svg" width={16} height={16} onClick={onDeleteClick} />
+          <ListItemIconEditButtonStyle
+            src={`assets/ui/edit${suffix}.svg`}
+            width={16}
+            height={16}
+            onClick={onEditClick}
+          />
+          <ListItemIconEditButtonStyle
+            src={`assets/ui/close${suffix}.svg`}
+            width={16}
+            height={16}
+            onClick={onDeleteClick}
+          />
         </ButtonGroupStyle>
       )}
     </ListItemStyle>
   )
-}
+})
 
 const NewItemContainerStyle = styled.div`
   height: 24px;
@@ -106,7 +124,7 @@ const NewItemButtonStyle = styled.button`
   border-radius: 0px;
 `
 
-const ItemInputForm = ({ onOk, onCancel, onChange, value, unique, placeholder }) => {
+const ItemInputForm = withTheme(({ onOk, onCancel, onChange, value, unique, placeholder }) => {
   const okDisabled = value === '' || !unique
 
   const handleKeyDown = e => {
@@ -141,7 +159,7 @@ const ItemInputForm = ({ onOk, onCancel, onChange, value, unique, placeholder })
       </NewItemButtonStyle>
     </NewItemContainerStyle>
   )
-}
+})
 
 export default class EditableRadioGroup extends Component {
   state = {
@@ -326,8 +344,14 @@ export default class EditableRadioGroup extends Component {
   }
 
   render() {
+    const {
+      theme: { type }
+    } = this.props
+
+    const className = type === 'dark' ? 'bp3-dark' : undefined
+
     return (
-      <ComponentStyle className="bp3-dark">
+      <ComponentStyle className={className}>
         {this.state.array.map((value, index) => this.renderItem(value, index))}
         {this.renderAddButton()}
       </ComponentStyle>

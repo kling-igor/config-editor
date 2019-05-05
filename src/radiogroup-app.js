@@ -1,4 +1,4 @@
-import '../app.css'
+import './app.css'
 import React, { Component, PureComponent, useState } from 'react'
 import {
   Button,
@@ -16,9 +16,11 @@ import {
   Icon
 } from '@blueprintjs/core'
 
-import styled, { createGlobalStyle } from 'styled-components'
+import theme from './themes/ui/light'
 
-import EditableRadioGroup from './editable-radiogroup'
+import styled, { createGlobalStyle, ThemeProvider } from 'styled-components'
+
+import EditableRadioGroup from './config-edtor/editable-radiogroup'
 
 const GlobalStyle = createGlobalStyle`
   html {
@@ -32,7 +34,7 @@ const GlobalStyle = createGlobalStyle`
     margin: 0;
     font-family: Roboto, sans-serif;
     overflow: hidden;
-    background-color: #282c34;
+    background-color: ${({ theme: { type } }) => (type === 'dark' ? '#282c34' : '#ffffff')};
     height: 100%;
     margin: 0;
     overflow: hidden !important;
@@ -71,14 +73,17 @@ const noop = () => {}
 export default class App extends Component {
   render() {
     return (
-      <>
-        <GlobalStyle />
-        <EditableRadioGroup
-          array={['http://blackhole.dev.marm.com', 'http://lic.dev.marm.com', 'http://monitoring.dev.marm.com']}
-          addButtonLabel="Add URL"
-          inputPlaceholder="URL..."
-        />
-      </>
+      <ThemeProvider theme={theme}>
+        <>
+          <GlobalStyle theme={theme} />
+          <EditableRadioGroup
+            theme={theme}
+            array={['http://blackhole.dev.marm.com', 'http://lic.dev.marm.com', 'http://monitoring.dev.marm.com']}
+            addButtonLabel="Add URL"
+            inputPlaceholder="URL..."
+          />
+        </>
+      </ThemeProvider>
     )
   }
 }
