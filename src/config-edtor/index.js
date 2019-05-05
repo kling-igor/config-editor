@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import { action, observable, decorate } from 'mobx'
 import { observer } from 'mobx-react'
+import { Link, Element, Events, animateScroll as scroll, scrollSpy, scroller } from 'react-scroll'
 
 import { Checkbox } from '@blueprintjs/core'
 import { FormGroup, InputGroup, NumericInput, Keys } from '@blueprintjs/core'
@@ -288,6 +289,41 @@ const SearchResultCount = ({ count }) => {
   )
 }
 
+const SearchContainerStyle = styled.div`
+  overflow: hidden;
+
+  position: relative;
+  padding: 2px;
+  top: 0px;
+  left: 0px;
+  height: 35px;
+  min-height: 35px;
+  width: 100%;
+`
+
+const ContentContainerStyle = styled.div`
+  height: calc(100% - 35px);
+  width: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: row;
+`
+
+const IndexContainerStyle = styled.div`
+  width: 200px;
+  height: 100%;
+  background-color: gray;
+  overflow: auto;
+`
+
+const SettingsContainerStyle = styled.div`
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  padding-left: 16px;
+  padding-right: 16px;
+`
+
 @observer
 export default class ConfigEditor extends Component {
   // элементы отображения заголовков секций
@@ -426,18 +462,22 @@ export default class ConfigEditor extends Component {
 
   render() {
     return (
-      <div className="bp3-dark">
-        <InputGroup
-          // leftIcon="search"
-          onChange={this.handleQueryChange}
-          placeholder="Search settings"
-          rightElement={<SearchResultCount count={this.state.searchResultCount} />}
-          small={true}
-          fill={true}
-          value={this.state.query}
-          // onKeyDown={onKeyDown}
-        />
-        {this.state.elements}
+      <div className="bp3-dark" style={{ height: '100%', width: '100%' }}>
+        <SearchContainerStyle>
+          <InputGroup
+            leftIcon="search"
+            onChange={this.handleQueryChange}
+            placeholder="Search settings"
+            rightElement={<SearchResultCount count={this.state.searchResultCount} />}
+            small={true}
+            fill={true}
+            value={this.state.query}
+          />
+        </SearchContainerStyle>
+        <ContentContainerStyle>
+          <IndexContainerStyle>Index here...</IndexContainerStyle>
+          <SettingsContainerStyle>{this.state.elements}</SettingsContainerStyle>
+        </ContentContainerStyle>
       </div>
     )
   }
