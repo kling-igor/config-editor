@@ -1,5 +1,6 @@
 import React, { Component, useState } from 'react'
 import styled from 'styled-components'
+import { FormGroup, InputGroup, NumericInput, Keys } from '@blueprintjs/core'
 
 const ComponentStyle = styled.div`
   padding: 12;
@@ -64,7 +65,7 @@ const ListItem = props => {
     setHovering(false)
   }
 
-  const { url, onEditClick = () => {}, onDeleteClick = () => {}, onSelect, selected } = props
+  const { value, onEditClick = () => {}, onDeleteClick = () => {}, onSelect, selected } = props
 
   {
     /* <ListItemStyle pointerEvents="none" hovering={hovering}> */
@@ -74,7 +75,7 @@ const ListItem = props => {
     <ListItemStyle onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} hovering={hovering}>
       <LabelContainerStyle>
         <input type="radio" checked={selected} onChange={onSelect} />
-        <LabelStyle>{url}</LabelStyle>
+        <LabelStyle>{value}</LabelStyle>
       </LabelContainerStyle>
       {hovering && (
         <ButtonGroupStyle>
@@ -86,6 +87,62 @@ const ListItem = props => {
   )
 }
 
+const NewItemContainerStyle = styled.div`
+  height: 24px;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  width: 100%;
+`
+
+const NewItemInputStyle = styled.input`
+  border-radius: 0px;
+  font-size: 14px;
+`
+
+const NewItemButtonStyle = styled.button`
+  margin-left: 2px;
+  width: 80px;
+  border-radius: 0px;
+`
+
+const ItemInputForm = ({ onOk, onCancel, onChange, value, unique, placeholder }) => {
+  const okDisabled = value === '' || !unique
+
+  const handleKeyDown = e => {
+    if (e.keyCode === Keys.ENTER && !okDisabled) {
+      onOk()
+    }
+  }
+
+  const intent = unique ? 'bp3-intent-primary' : 'bp3-intent-warning'
+
+  return (
+    <NewItemContainerStyle>
+      <NewItemInputStyle
+        className={`bp3-input bp3-fill bp3-small ${intent}`}
+        type="text"
+        placeholder={placeholder}
+        dir="auto"
+        value={value}
+        onChange={onChange}
+        onKeyDown={handleKeyDown}
+      />
+      <NewItemButtonStyle
+        type="button"
+        className="bp3-button bp3-intent-primary bp3-small"
+        disabled={okDisabled}
+        onClick={onOk}
+      >
+        Ok
+      </NewItemButtonStyle>
+      <NewItemButtonStyle type="button" className="bp3-button bp3-intent-primary bp3-small" onClick={onCancel}>
+        Cancel
+      </NewItemButtonStyle>
+    </NewItemContainerStyle>
+  )
+}
+
 export default class EditableRadioGroup extends Component {
   state = {
     selectedItem: 0,
@@ -93,7 +150,7 @@ export default class EditableRadioGroup extends Component {
     editingValue: '',
     previousValue: null, // add new value - no previous value available
     editingIndex: -1, // в случае отказа - если это последнее значение в списке и previousValue: null - обрезаем списокб иначе это было редактирование непоследнего значения - просто возвращаем старое
-    uniqe: true // уникально ли вводимое значение
+    unique: true // уникально ли вводимое значение
   }
 
   constructor(props) {
@@ -147,9 +204,9 @@ export default class EditableRadioGroup extends Component {
       ...this.state.array.slice(this.state.editingIndex + 1, this.state.array.length)
     ]
 
-    const uniqe = !array.includes(value)
+    const unique = !array.includes(value)
 
-    this.setState({ editingValue: value, uniqe })
+    this.setState({ editingValue: value, unique })
   }
 
   onSelect = index => {
@@ -193,16 +250,16 @@ export default class EditableRadioGroup extends Component {
         editingIndex: index
       })
     } else {
-      let newHosts
+      let newArray
 
       if (editingIndex !== -1) {
-        newHosts = [...array.slice(0, editingIndex), previousValue, ...array.slice(editingIndex + 1, array.length)]
+        newArray = [...array.slice(0, editingIndex), previousValue, ...array.slice(editingIndex + 1, array.length)]
       } else {
-        newHosts = array
+        newArray = array
       }
 
       this.setState({
-        array: newHosts,
+        array: newArray,
         editingValue: this.state.array[index],
         previousValue: this.state.array[index],
         editingIndex: index
@@ -210,46 +267,18 @@ export default class EditableRadioGroup extends Component {
     }
   }
 
-  renderUrl = (url, index) => {
+  renderItem = (value, index) => {
     if (this.state.editingIndex === index) {
       return (
-        <div
-          key={url || '__edit__'}
-          style={{
-            height: '24px',
-            display: 'flex',
-            flexDirection: 'row',
-            justifyContent: 'flex-start',
-            width: '400px'
-          }}
-        >
-          <input
-            className="bp3-input bp3-fill bp3-small bp3-intent-primary"
-            type="text"
-            placeholder="url"
-            dir="auto"
-            style={{ borderRadius: '0px', fontSize: '14px' }}
-            value={this.state.editingValue}
-            onChange={this.onChange}
-          />
-          <button
-            type="button"
-            className="bp3-button bp3-intent-primary bp3-small"
-            style={{ marginLeft: '2px', width: '80px', borderRadius: '0px' }}
-            disabled={this.state.editingValue === '' || !this.state.uniqe}
-            onClick={this.onOk}
-          >
-            Ok
-          </button>
-          <button
-            type="button"
-            className="bp3-button bp3-intent-primary bp3-small"
-            style={{ marginLeft: '2px', width: '80px', borderRadius: '0px' }}
-            onClick={this.onCancel}
-          >
-            Cancel
-          </button>
-        </div>
+        <ItemInputForm
+          key="__edit__"
+          placeholder={this.props.inputPlaceholder || 'Item...'}
+          onOk={this.onOk}
+          onCancel={this.onCancel}
+          onChange={this.onChange}
+          value={this.state.editingValue}
+          unique={this.state.unique}
+        />
       )
     }
 
@@ -267,8 +296,8 @@ export default class EditableRadioGroup extends Component {
 
     return (
       <ListItem
-        key={url}
-        url={url}
+        key={value}
+        value={value}
         onEditClick={editItem}
         onDeleteClick={deleteItem}
         onSelect={onSelect}
@@ -279,6 +308,7 @@ export default class EditableRadioGroup extends Component {
 
   renderAddButton = () => {
     const { editingIndex, array, previousValue } = this.state
+    const { addButtonLabel = 'Add Item' } = this.props
 
     if (editingIndex === -1 || editingIndex < array.length - 1 || previousValue != null) {
       return (
@@ -287,7 +317,7 @@ export default class EditableRadioGroup extends Component {
           className="bp3-button bp3-intent-primary bp3-small"
           onClick={this.onAddPressed}
         >
-          Add Item
+          {addButtonLabel}
         </AddItemButtonStyle>
       )
     }
@@ -296,11 +326,9 @@ export default class EditableRadioGroup extends Component {
   }
 
   render() {
-    console.log(this.state)
-
     return (
       <ComponentStyle className="bp3-dark">
-        {this.state.array.map((url, index) => this.renderUrl(url, index))}
+        {this.state.array.map((value, index) => this.renderItem(value, index))}
         {this.renderAddButton()}
       </ComponentStyle>
     )

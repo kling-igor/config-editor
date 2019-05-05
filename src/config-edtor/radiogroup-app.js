@@ -75,6 +75,8 @@ export default class App extends Component {
         <GlobalStyle />
         <EditableRadioGroup
           array={['http://blackhole.dev.marm.com', 'http://lic.dev.marm.com', 'http://monitoring.dev.marm.com']}
+          addButtonLabel="Add URL"
+          inputPlaceholder="URL..."
         />
       </>
     )
