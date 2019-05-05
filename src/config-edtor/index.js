@@ -26,13 +26,13 @@ const settingsSearchOptions = {
 
 const LabelStyle = styled.p`
   margin-bottom: 2px;
-  color: #9da5b4;
+  color: ${({ theme: { type } }) => (type === 'dark' ? '#9da5b4' : '#717171')};
   font-weight: normal;
   font-size: 1.2em;
 `
 
 const SectionLabelStyle = styled.p`
-  color: white;
+  color: ${({ theme: { type } }) => (type === 'dark' ? '#dbdbdb' : '#292929')};
   margin-top: 0.5em;
   margin-bottom: 0.5em;
   font-weight: bold;
@@ -40,7 +40,7 @@ const SectionLabelStyle = styled.p`
 `
 
 const SectionDescriptionStyle = styled.p`
-  color: #9da5b4;
+  color: ${({ theme: { type } }) => (type === 'dark' ? '#9da5b4' : '#474747')};
   font-size: 12px;
   margin-bottom: 0px;
 `
@@ -48,7 +48,7 @@ const SectionDescriptionStyle = styled.p`
 const DescriptionStyle = styled.p`
   font-size: 12px;
   margin-bottom: 0px;
-  color: rgba(157, 165, 180, 0.6);
+  color: ${({ theme: { type } }) => (type === 'dark' ? 'rgba(157, 165, 180, 0.6)' : '#949494')};
 `
 
 const CheckboxDescriptionStyle = styled(DescriptionStyle)`
@@ -264,30 +264,27 @@ const componentMaker = schema => {
   return COMPONENT_MAKERS[schema.type] || makeDefaultComponent
 }
 
-const SearchResultCount = ({ count }) => {
+const SearchResultBadgeStyle = styled.div`
+  display: block;
+  background-color: ${({ theme: { type } }) => (type === 'dark' ? '#444444' : '#bcbcbc')};
+  color: ${({ theme: { type } }) => (type === 'dark' ? '#f4f4f4' : '#2d2d2d')};
+  padding-left: 8px;
+  padding-right: 8px;
+  padding-top: 2px;
+  padding-bottom: 1px;
+  border-radius: 2px;
+  font-size: 12px;
+  margin: 0;
+  margin-top: 3px;
+  margin-right: 3px;
+  user-select: none;
+`
+
+const SearchResultCount = withTheme(({ count }) => {
   if (count == null) return null
 
-  return (
-    <div
-      style={{
-        display: 'block',
-        backgroundColor: '#444444',
-        color: '#f4f4f4',
-        paddingLeft: '8px',
-        paddingRight: '8px',
-        paddingTop: '2px',
-        paddingBottom: '1px',
-        borderRadius: 2,
-        fontSize: '12px',
-        margin: 0,
-        marginTop: '3px',
-        userSelect: 'none'
-      }}
-    >
-      {`${count} Settings Found`}
-    </div>
-  )
-}
+  return <SearchResultBadgeStyle>{`${count} Settings Found`}</SearchResultBadgeStyle>
+})
 
 const SearchContainerStyle = styled.div`
   overflow: hidden;
@@ -461,8 +458,10 @@ export default class ConfigEditor extends Component {
   }
 
   render() {
+    const className = this.props.theme.type === 'dark' ? 'bp3-dark' : undefined
+
     return (
-      <div className="bp3-dark" style={{ height: '100%', width: '100%' }}>
+      <div className={className} style={{ height: '100%', width: '100%' }}>
         <SearchContainerStyle>
           <InputGroup
             leftIcon="search"

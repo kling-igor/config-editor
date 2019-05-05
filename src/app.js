@@ -2,9 +2,11 @@ import React, { PureComponent } from 'react'
 
 import * as R from 'ramda'
 
-import styled, { createGlobalStyle } from 'styled-components'
+import styled, { createGlobalStyle, ThemeProvider } from 'styled-components'
 
 import './app.css'
+
+import theme from './themes/ui/light'
 
 import ConfigEditor from './config-edtor'
 
@@ -22,7 +24,7 @@ const GlobalStyle = createGlobalStyle`
     margin: 0;
     font-family: Roboto, sans-serif;
     overflow: hidden;
-    background-color: #282c34;
+    background-color: ${({ theme: { type } }) => (type === 'dark' ? '#282c34' : '#ffffff')};
     height: 100%;
     margin: 0;
     overflow: hidden !important;
@@ -44,7 +46,7 @@ const GlobalStyle = createGlobalStyle`
   }
 
   label.bp3-control.bp3-checkbox.vision {
-    color: #9da5b4;
+    color: ${({ theme: { type } }) => (type === 'dark' ? '#9da5b4' : '#474747')};
     font-size: 1.2em;
   }
 
@@ -69,7 +71,7 @@ const ConfigSchema = {
   core: {
     type: 'object',
     title: 'Core Settings',
-    description: `These are Atom's core settings which affect behavior unrelated to text editing. Individual packages may have their own additional settings found within their package card in the Packages list.`,
+    description: `These are Vision's core settings which affect behavior unrelated to text editing. Individual packages may have their own additional settings found within their package card in the Packages list.`,
     properties: {
       openEmptyEditorOnStart: {
         type: 'boolean',
@@ -121,10 +123,12 @@ config.resetSettings(userSettings)
 export default class App extends PureComponent {
   render() {
     return (
-      <>
-        <GlobalStyle />
-        <ConfigEditor config={config} />
-      </>
+      <ThemeProvider theme={theme}>
+        <>
+          <GlobalStyle theme={theme} />
+          <ConfigEditor theme={theme} config={config} />
+        </>
+      </ThemeProvider>
     )
   }
 }
