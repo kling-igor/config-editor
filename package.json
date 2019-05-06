@@ -5,7 +5,8 @@
   "main": "src/index.js",
   "scripts": {
     "start": "webpack-dev-server --mode development --env.dev --hot",
-    "test": "mocha --require @babel/register --recursive src/**/test/*.spec.js"
+    "test": "mocha --require @babel/register --recursive src/**/test/*.spec.js",
+    "analize": "webpack --mode production --env.prod --profile --json > stats.json"
   },
   "keywords": [],
   "author": "'Igor Kling' <\"klingiv@altarix.ru\">",
@@ -52,6 +53,7 @@
     "style-loader": "^0.23.0",
     "svg-inline-loader": "^0.8.0",
     "webpack": "^4.28.4",
+    "webpack-bundle-analyzer": "^3.3.2",
     "webpack-cli": "^3.2.1",
     "webpack-dev-server": "^3.1.14"
   }

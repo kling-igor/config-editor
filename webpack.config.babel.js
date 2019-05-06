@@ -1,13 +1,26 @@
 import webpack from 'webpack'
 import HTMLWebpackPlugin from 'html-webpack-plugin'
+import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer'
 import { resolve, join } from 'path'
 import packagejson from './package.json'
 
 module.exports = env => ({
   entry: join(__dirname, 'src', 'index.js'),
   output: {
-    filename: 'index.js',
+    filename: '[name].[hash].js',
     path: join(__dirname, 'app')
+  },
+
+  optimization: {
+    splitChunks: {
+      cacheGroups: {
+        vendor: {
+          test: /[\\/]node_modules[\\/](react|react-dom|lodash)[\\/]/,
+          name: 'vendor',
+          chunks: 'all'
+        }
+      }
+    }
   },
 
   watch: false,
@@ -34,6 +47,9 @@ module.exports = env => ({
       inject: 'body',
       hash: true,
       debug: env.dev
+    }),
+    new BundleAnalyzerPlugin({
+      analyzerMode: 'server'
     })
   ],
 
