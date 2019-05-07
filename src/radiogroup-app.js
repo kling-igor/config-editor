@@ -20,7 +20,7 @@ import theme from './themes/ui/light'
 
 import styled, { createGlobalStyle, ThemeProvider } from 'styled-components'
 
-import EditableRadioGroup from './config-edtor/editable-radiogroup'
+import EditableRadioGroup from './config-edtor/components/editable-radiogroup'
 
 const GlobalStyle = createGlobalStyle`
   html {
