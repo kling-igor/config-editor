@@ -35,6 +35,11 @@ const settingsSearchOptions = {
   keys: ['label', 'description']
 }
 
+const RootStyle = styled.div`
+  width: 100%;
+  height: 100%;
+`
+
 const LabelStyle = styled.p`
   margin-bottom: 2px;
   color: ${({ theme: { type } }) => (type === 'dark' ? '#9da5b4' : '#717171')};
@@ -73,6 +78,76 @@ const CheckboxDescriptionStyle = styled(DescriptionStyle)`
 const ComponentContainer = styled.div`
   margin-top: 8px;
   margin-bottom: 8px;
+`
+
+const SearchResultBadgeStyle = styled.div`
+  display: block;
+  background-color: ${({ theme: { type } }) => (type === 'dark' ? '#444444' : '#bcbcbc')};
+  color: ${({ theme: { type } }) => (type === 'dark' ? '#f4f4f4' : '#2d2d2d')};
+  padding-left: 8px;
+  padding-right: 8px;
+  padding-top: 2px;
+  padding-bottom: 1px;
+  border-radius: 2px;
+  font-size: 12px;
+  margin: 0;
+  margin-top: 3px;
+  margin-right: 3px;
+  user-select: none;
+`
+
+const SearchContainerStyle = styled.div`
+  overflow: hidden;
+
+  position: relative;
+  padding: 2px;
+  top: 0px;
+  left: 0px;
+  height: 35px;
+  min-height: 35px;
+  width: 100%;
+`
+
+const ContentContainerStyle = styled.div`
+  height: calc(100% - 35px);
+  width: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: row;
+`
+
+const IndexContainerStyle = styled.div`
+  width: 300px;
+  height: 100%;
+  background-color: gray;
+  overflow: auto;
+`
+
+const IndexListStyle = styled.ul`
+  margin: 8;
+  padding-inline-start: 0;
+`
+
+const IndexElementStyle = styled.li`
+  font-size: 13px;
+  list-style-type: none;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  user-select: none;
+`
+
+const SettingsContainerStyle = styled.div`
+  padding-left: 16px;
+  padding-right: 16px;
+  overflow: auto;
+  width: calc(100% - 300px);
+  min-width: 300px;
+  height: 100%;
+`
+
+const DumbStyle = styled.div`
+  height: calc(100% - 300px);
 `
 
 const Description = Style => ({ children }) => {
@@ -278,66 +353,11 @@ const componentMaker = schema => {
   return COMPONENT_MAKERS[schema.type] || makeDefaultComponent
 }
 
-const SearchResultBadgeStyle = styled.div`
-  display: block;
-  background-color: ${({ theme: { type } }) => (type === 'dark' ? '#444444' : '#bcbcbc')};
-  color: ${({ theme: { type } }) => (type === 'dark' ? '#f4f4f4' : '#2d2d2d')};
-  padding-left: 8px;
-  padding-right: 8px;
-  padding-top: 2px;
-  padding-bottom: 1px;
-  border-radius: 2px;
-  font-size: 12px;
-  margin: 0;
-  margin-top: 3px;
-  margin-right: 3px;
-  user-select: none;
-`
-
 const SearchResultCount = withTheme(({ count }) => {
   if (count == null) return null
 
   return <SearchResultBadgeStyle>{`${count} Settings Found`}</SearchResultBadgeStyle>
 })
-
-const SearchContainerStyle = styled.div`
-  overflow: hidden;
-
-  position: relative;
-  padding: 2px;
-  top: 0px;
-  left: 0px;
-  height: 35px;
-  min-height: 35px;
-  width: 100%;
-`
-
-const ContentContainerStyle = styled.div`
-  height: calc(100% - 35px);
-  width: 100%;
-  overflow: hidden;
-  display: flex;
-  flex-direction: row;
-`
-
-const IndexContainerStyle = styled.div`
-  width: 300px;
-  height: 100%;
-  background-color: gray;
-  overflow: auto;
-`
-
-const SettingsContainerStyle = styled.div`
-  width: 100%;
-  height: 100%;
-  overflow: auto;
-  padding-left: 16px;
-  padding-right: 16px;
-`
-
-const DumbStyle = styled.div`
-  height: calc(100% - 300px);
-`
 
 @observer
 export default class ConfigEditor extends Component {
@@ -498,7 +518,7 @@ export default class ConfigEditor extends Component {
     const className = this.props.theme.type === 'dark' ? 'bp3-dark' : undefined
 
     return (
-      <div className={className} style={{ height: '100%', width: '100%' }}>
+      <RootStyle className={className}>
         <SearchContainerStyle>
           <InputGroup
             leftIcon="search"
@@ -510,9 +530,9 @@ export default class ConfigEditor extends Component {
             value={this.state.query}
           />
         </SearchContainerStyle>
-        <ContentContainerStyle>
+        <ContentContainerStyle id="ContentContainerStyle">
           <IndexContainerStyle>
-            <ul style={{ margin: 8, paddingInlineStart: 0 }}>
+            <IndexListStyle>
               {this.index.map(item => {
                 const { title, key } = item
                 return (
@@ -532,30 +552,22 @@ export default class ConfigEditor extends Component {
                       // console.log(`set inactive ${data}`)
                     }}
                   >
-                    <li
+                    <IndexElementStyle
                       key={key}
                       onClick={() => {
                         // console.log('click on:', key)
                       }}
-                      style={{
-                        fontSize: '13px',
-                        listStyleType: 'none',
-                        whiteSpace: 'nowrap',
-                        textOverflow: 'ellipsis',
-                        overflow: 'hidden',
-                        userSelect: 'none'
-                      }}
                     >
                       {title}
-                    </li>
+                    </IndexElementStyle>
                   </Link>
                 )
               })}
-            </ul>
+            </IndexListStyle>
           </IndexContainerStyle>
           <SettingsContainerStyle id="settingsContainer">{this.state.elements}</SettingsContainerStyle>
         </ContentContainerStyle>
-      </div>
+      </RootStyle>
     )
   }
 }
