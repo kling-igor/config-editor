@@ -12,6 +12,8 @@ import {
   scroller
 } from 'react-scroll'
 
+import debounce from 'lodash.debounce'
+
 import { Checkbox } from '@blueprintjs/core'
 import { FormGroup, InputGroup, NumericInput, Keys } from '@blueprintjs/core'
 import { Label, HTMLSelect } from '@blueprintjs/core'
@@ -347,6 +349,8 @@ export default class ConfigEditor extends Component {
   constructor(props) {
     super(props)
 
+    this.debouncedFilterSettings = debounce(this.filterSettings, 1000)
+
     const { config } = props
 
     const topics = {}
@@ -460,18 +464,22 @@ export default class ConfigEditor extends Component {
     this.setState({ query: event.target.value })
 
     if (event.target.value.length > 0) {
-      const result = this.fuse.search(event.target.value)
-
-      if (result.length === 0) {
-        this.setState({ searchResultCount: 'No', elements: [] })
-      } else {
-        const elements = this.settingsElements
-          .filter(({ key }) => !!result.find(({ key: resultKey }) => resultKey === key))
-          .map(({ Element }) => Element)
-        this.setState({ searchResultCount: result.length, elements })
-      }
+      this.debouncedFilterSettings()
     } else {
       this.setState({ searchResultCount: this.briefs.length, elements: this.makeDefaultContent() })
+    }
+  }
+
+  filterSettings = () => {
+    const result = this.fuse.search(this.state.query)
+
+    if (result.length === 0) {
+      this.setState({ searchResultCount: 'No', elements: [] })
+    } else {
+      const elements = this.settingsElements
+        .filter(({ key }) => !!result.find(({ key: resultKey }) => resultKey === key))
+        .map(({ Element }) => Element)
+      this.setState({ searchResultCount: result.length, elements })
     }
   }
 

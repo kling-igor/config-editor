@@ -48,10 +48,13 @@ module.exports = env => ({
       hash: true,
       debug: env.dev
     }),
-    new BundleAnalyzerPlugin({
-      analyzerMode: 'server'
-    })
-  ],
+    (() =>
+      env.dev
+        ? new BundleAnalyzerPlugin({
+            analyzerMode: 'server'
+          })
+        : null)()
+  ].filter(p => p),
 
   module: {
     rules: [
