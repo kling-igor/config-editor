@@ -85,7 +85,7 @@ export default class App extends Component {
                     <li
                       key={key}
                       onClick={() => {
-                        // console.log('click on:', key)
+                        console.log('click on:', key)
                       }}
                       style={{
                         fontSize: '13px',

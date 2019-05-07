@@ -50,21 +50,24 @@ const SectionLabelStyle = styled.p`
   font-size: 1.75em;
 `
 
-const SectionDescriptionStyle = styled.p`
+const SectionDescriptionStyle = styled.div`
   color: ${({ theme: { type } }) => (type === 'dark' ? '#9da5b4' : '#474747')};
   font-size: 12px;
-  margin-bottom: 0px;
+  /* margin-bottom: 0px; */ /*UNCOMMENT THIS*/
+  margin-bottom: 200px; /*REMOVE THIS!!!*/
 `
 
-const DescriptionStyle = styled.p`
+const DescriptionStyle = styled.div`
   font-size: 12px;
-  margin-bottom: 0px;
   color: ${({ theme: { type } }) => (type === 'dark' ? 'rgba(157, 165, 180, 0.6)' : '#949494')};
+  /* margin-bottom: 0px; */ /*UNCOMMENT THIS*/
+  margin-bottom: 200px; /*REMOVE THIS!!!*/
 `
 
 const CheckboxDescriptionStyle = styled(DescriptionStyle)`
   margin-left: 26px;
-  margin-bottom: 0px;
+  /* margin-bottom: 0px; */ /*UNCOMMENT THIS*/
+  margin-bottom: 200px; /*REMOVE THIS!!!*/
 `
 
 const ComponentContainer = styled.div`
@@ -332,6 +335,10 @@ const SettingsContainerStyle = styled.div`
   padding-right: 16px;
 `
 
+const DumbStyle = styled.div`
+  height: calc(100% - 300px);
+`
+
 @observer
 export default class ConfigEditor extends Component {
   // элементы отображения заголовков секций
@@ -397,9 +404,9 @@ export default class ConfigEditor extends Component {
     this.topicElements = Object.entries(topics).map(([key, { title, description }]) => {
       return {
         key,
-        Element: (
-          <Element name={key}>
-            <div key={key}>
+        component: (
+          <Element name={key} key={key}>
+            <div>
               <SectionLabelStyle>{title}</SectionLabelStyle>
               {description && <SectionDescriptionStyle>{description}</SectionDescriptionStyle>}
             </div>
@@ -414,32 +421,21 @@ export default class ConfigEditor extends Component {
       properties.forEach(item => {
         const { key: propertyKey, schema, value, setValue } = item
         const label = uncamelcase(propertyKey.split('.').pop())
-        const FormComponent = ScrollElement(componentMaker(schema)({ label, ...{ ...schema } }))
 
         this.briefs.push({ key: propertyKey, label, description: schema.description })
 
+        const FormComponent = componentMaker(schema)({ label, ...{ ...schema } })
+
         this.settingsElements.push({
           key: propertyKey,
-          Element: <FormComponent name={propertyKey} key={propertyKey} value={value} onChange={setValue} />
+          component: (
+            <Element name={propertyKey} key={propertyKey}>
+              <FormComponent value={value} onChange={setValue} />
+            </Element>
+          )
         })
       })
     })
-
-    // this.elements = Object.entries(topics).map(([key, { title, description, properties }]) => {
-    //   return (
-    //     <div key={key}>
-    //       <SectionLabelStyle>{title}</SectionLabelStyle>
-    //       {description && <SectionDescriptionStyle>{description}</SectionDescriptionStyle>}
-    //       {properties.map(item => {
-    //         const { key: propertyKey, schema, value, setValue } = item
-    //         const label = uncamelcase(propertyKey.split('.').pop())
-    //         const FormComponent = componentMaker(schema)({ label, ...{ ...schema } })
-
-    //         return <FormComponent key={propertyKey} value={value} onChange={setValue} />
-    //       })}
-    //     </div>
-    //   )
-    // })
 
     this.state.searchResultCount = this.briefs.length
 
@@ -450,13 +446,20 @@ export default class ConfigEditor extends Component {
 
   makeDefaultContent = () => {
     let elements = []
-    this.topicElements.forEach(({ key: topicKey, Element: TopicElement }) => {
-      elements = [...elements, TopicElement]
+    this.topicElements.forEach(({ key: topicKey, component: TopicComponent }) => {
+      elements = [...elements, TopicComponent]
       const settingsElements = this.settingsElements
         .filter(({ key }) => key.startsWith(`${topicKey}.`))
-        .map(({ Element: SettingsElement }) => SettingsElement)
+        .map(({ component: SettingsComponent }) => SettingsComponent)
       elements = [...elements, ...settingsElements]
     })
+
+    elements.push(
+      <Element name="__dumb__" key="__dumb__">
+        <DumbStyle />
+      </Element>
+    )
+
     return elements
   }
 
@@ -471,6 +474,8 @@ export default class ConfigEditor extends Component {
   }
 
   filterSettings = () => {
+    if (this.state.query.length === 0) return
+
     const result = this.fuse.search(this.state.query)
 
     if (result.length === 0) {
@@ -478,7 +483,13 @@ export default class ConfigEditor extends Component {
     } else {
       const elements = this.settingsElements
         .filter(({ key }) => !!result.find(({ key: resultKey }) => resultKey === key))
-        .map(({ Element }) => Element)
+        .map(({ component }) => component)
+      elements.push(
+        <Element name="__dumb__" key="__dumb__">
+          <DumbStyle />
+        </Element>
+      )
+
       this.setState({ searchResultCount: result.length, elements })
     }
   }
@@ -507,20 +518,24 @@ export default class ConfigEditor extends Component {
                 return (
                   <Link
                     activeClass="active"
+                    key={key}
                     to={key}
                     spy={true}
                     smooth={true}
-                    offset={-100}
+                    offset={-50}
                     duration={500}
                     containerId="settingsContainer"
                     onSetActive={data => {
-                      console.log(`set active ${data}`)
+                      // console.log(`set active ${data}`)
+                    }}
+                    onSetInactive={data => {
+                      // console.log(`set inactive ${data}`)
                     }}
                   >
                     <li
                       key={key}
                       onClick={() => {
-                        console.log(key)
+                        // console.log('click on:', key)
                       }}
                       style={{
                         fontSize: '13px',
