@@ -20,7 +20,7 @@ const IndexElementStyle = styled.li`
   text-overflow: ellipsis;
   overflow: hidden;
   user-select: none;
-  color: black;
+  color: ${({ theme: { type } }) => (type === 'dark' ? '#b4b4b4' : '#676767')};
 `
 
 const IndexElementTitleStyle = styled.span`
@@ -36,7 +36,7 @@ const IndexElementMatchesCountStyle = styled.span`
 
 const LinkComponent = ScrollLink(IndexElementTitleStyle)
 
-const IndexElementComponent = ({ keyProp, title, matches = '', scrollContainerId }) => (
+const IndexElementComponent = withTheme(({ keyProp, title, matches = '', scrollContainerId }) => (
   <IndexElementStyle>
     <LinkComponent
       // activeClass="active"
@@ -60,7 +60,7 @@ const IndexElementComponent = ({ keyProp, title, matches = '', scrollContainerId
     </LinkComponent>
     {!!matches && <IndexElementMatchesCountStyle>&nbsp;({matches})</IndexElementMatchesCountStyle>}
   </IndexElementStyle>
-)
+))
 
 export default ({ items, scrollContainerId }) => (
   <IndexContainerStyle>

@@ -1,12 +1,14 @@
-import React, { PureComponent } from 'react'
-
+import React, { Component } from 'react'
+import { observable, action } from 'mobx'
+import { observer } from 'mobx-react'
 import * as R from 'ramda'
 
 import styled, { createGlobalStyle, ThemeProvider } from 'styled-components'
 
 import './app.css'
 
-import theme from './themes/ui/light'
+import lightTheme from './themes/ui/light'
+import darkTheme from './themes/ui/dark'
 
 import ConfigEditor from './config-edtor'
 
@@ -81,6 +83,12 @@ const ConfigSchema = {
     title: 'Core Settings',
     description: `These are Vision's core settings which affect behavior unrelated to text editing. Individual packages may have their own additional settings found within their package card in the Packages list.`,
     properties: {
+      theme: {
+        type: 'string',
+        enum: ['dark', 'light'],
+        default: 'dark',
+        description: 'UI theme'
+      },
       openEmptyEditorOnStart: {
         type: 'boolean',
         description:
@@ -128,15 +136,37 @@ const userSettings = { core: { openEmptyEditorOnStart: true, warnOnLargeFileLimi
 config.setSchema(null, { type: 'object', properties: R.clone(ConfigSchema) })
 config.resetSettings(userSettings)
 
-export default class App extends PureComponent {
+class Store {
+  themes = {
+    dark: darkTheme,
+    light: lightTheme
+  }
+
+  @observable theme = 'dark'
+
+  @action.bound setTheme(theme) {
+    this.theme = this.themes[theme]
+  }
+
+  constructor(config) {
+    config.observe('core.theme', theme => {
+      this.setTheme(theme)
+    })
+  }
+}
+
+const store = new Store(config)
+
+@observer
+export default class App extends Component {
   render() {
     return (
-      <ThemeProvider theme={theme}>
-        <>
-          <GlobalStyle theme={theme} />
-          <ConfigEditor theme={theme} config={config} />
-        </>
-      </ThemeProvider>
+      <>
+        <GlobalStyle theme={store.theme} />
+        <ThemeProvider theme={store.theme}>
+          <ConfigEditor config={config} />
+        </ThemeProvider>
+      </>
     )
   }
 }

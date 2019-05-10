@@ -47,7 +47,7 @@ const elements = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 const colors = ['white', 'yellow', 'magenta', 'cyan', 'orange', 'red', 'green', 'blue', 'purple', 'grey']
 
 const ElementComponent = styled.div`
-  height: 300px;
+  /* height: 300px; */
   width: 100%;
   color: black;
   background-color: ${({ backgroundColor }) => backgroundColor};

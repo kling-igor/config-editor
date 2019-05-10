@@ -62,8 +62,7 @@ const SectionLabelStyle = styled.p`
 const SectionDescriptionStyle = styled.div`
   color: ${({ theme: { type } }) => (type === 'dark' ? '#9da5b4' : '#474747')};
   font-size: 12px;
-  /* margin-bottom: 0px; */ /*UNCOMMENT THIS*/
-  margin-bottom: 200px; /*REMOVE THIS!!!*/
+  margin-bottom: 0px;
 `
 
 const SettingsContainerStyle = styled.div`
@@ -75,222 +74,201 @@ const SettingsContainerStyle = styled.div`
   height: 100%;
 `
 
-@observer
-export default class ConfigEditor extends Component {
-  // элементы отображения заголовков секций
-  topicElements = []
+const ConfigEditor = withTheme(
+  observer(
+    class extends Component {
+      topicElements = []
 
-  // элементы отображения форм
-  settingsElements = []
+      settingsElements = []
 
-  briefs = []
+      subscriptions = []
 
-  state = { query: '', searchResultCount: null, elements: [], index: [] }
+      briefs = []
 
-  constructor(props) {
-    super(props)
+      state = { query: '', searchResultCount: null, elements: [], index: [] }
 
-    this.debouncedFilterSettings = debounce(this.filterSettings, 1000)
+      constructor(props) {
+        super(props)
 
-    const { config } = props
+        this.debouncedFilterSettings = debounce(this.filterSettings, 1000)
 
-    const topics = {}
+        const { config } = props
 
-    const index = []
+        for (const key of Object.keys(config.schema.properties)) {
+          const { title: topicTitle, description: topicDescription } = config.schema.properties[key]
 
-    // по всем корневым разделам (core, editor и т.д.)
-    // TODO: возможно следует сократить количество обходов схемы!!!
-    for (const key of Object.keys(config.schema.properties)) {
-      topics[key] = {
-        title: config.schema.properties[key].title,
-        description: config.schema.properties[key].description,
-        properties: []
+          this.topicElements.push({
+            key,
+            component: (
+              <Element name={key} key={key}>
+                <div>
+                  <SectionLabelStyle>{topicTitle}</SectionLabelStyle>
+                  {topicDescription && <SectionDescriptionStyle>{topicDescription}</SectionDescriptionStyle>}
+                </div>
+              </Element>
+            )
+          })
+
+          for (const subkey of Object.keys(config.schema.properties[key].properties)) {
+            const schema = config.schema.properties[key].properties[subkey]
+            const propertyKey = `${key}.${subkey}`
+
+            const store = new (class {
+              @observable value = ''
+              @action.bound updateValue(value) {
+                this.value = value
+              }
+              setValue = value => {
+                config.set(propertyKey, value)
+              }
+            })()
+
+            this.subscriptions.push(config.observe(propertyKey, store.updateValue))
+
+            const label = uncamelcase(subkey)
+
+            this.briefs.push({ key: propertyKey, label, description: schema.description })
+
+            const FormComponent = componentMaker(schema)({ label, ...{ ...schema } })
+
+            this.settingsElements.push({
+              key: propertyKey,
+              component: (
+                <Element name={propertyKey} key={propertyKey}>
+                  <FormComponent store={store} />
+                </Element>
+              )
+            })
+          }
+        }
+
+        this.fuse = new Fuse(this.briefs, settingsSearchOptions)
+
+        this.state.searchResultCount = this.briefs.length
+        this.state.elements = this.makeDefaultContent()
+        this.state.index = this.makeDefaultIndex()
       }
 
-      index.push({ title: config.schema.properties[key].title, key })
+      dispose() {
+        this.setState({})
+        this.subscriptions.forEach(subscription => subscription.dispose())
+        this.subscriptions = null
+        this.briefs = null
 
-      for (const subkey of Object.keys(config.schema.properties[key].properties)) {
-        // схема элемента
-        const schema = config.schema.properties[key].properties[subkey]
-        const propertyKey = `${key}.${subkey}`
-        // хранилище для свойста
+        this.settingsElements = null
+        this.topicElements = null
 
-        // const title = uncamelcase(subkey.split('.').pop())
-        // index.push({ title, key: propertyKey })
-
-        const store = new (class {
-          key = propertyKey
-          schema = schema
-          @observable value = ''
-          @action.bound updateValue(value) {
-            this.value = value
-          }
-          setValue = value => {
-            config.set(propertyKey, value)
-          }
-          disposable = config.observe(propertyKey, this.updateValue)
-        })()
-
-        topics[key].properties.push(store)
+        this.fuse = null
       }
-    }
 
-    // TODO: возможно следует сократить количество обходов схемы!!!
-    // заранее сохраняем элементы отображения заголовков секций
-    this.topicElements = Object.entries(topics).map(([key, { title, description }]) => {
-      return {
-        key,
-        component: (
-          <Element name={key} key={key}>
-            <div>
-              <SectionLabelStyle>{title}</SectionLabelStyle>
-              {description && <SectionDescriptionStyle>{description}</SectionDescriptionStyle>}
-            </div>
-          </Element>
+      makeDefaultContent = () => {
+        let elements = []
+        this.topicElements.forEach(({ key: topicKey, component: TopicComponent }) => {
+          elements = [...elements, TopicComponent]
+          const settingsElements = this.settingsElements
+            .filter(({ key }) => key.startsWith(`${topicKey}.`))
+            .map(({ component: SettingsComponent }) => SettingsComponent)
+          elements = [...elements, ...settingsElements]
+        })
+
+        return elements
+      }
+
+      makeDefaultIndex = () => {
+        const {
+          config: { schema }
+        } = this.props
+
+        return Object.keys(schema.properties).map(key => ({
+          title: schema.properties[key].title,
+          key
+        }))
+      }
+
+      handleQueryChange = event => {
+        this.setState({ query: event.target.value })
+
+        if (event.target.value.length > 0) {
+          this.debouncedFilterSettings()
+        } else {
+          this.setState({
+            searchResultCount: this.briefs.length,
+            elements: this.makeDefaultContent(),
+            index: this.makeDefaultIndex()
+          })
+        }
+      }
+
+      filterSettings = () => {
+        if (this.state.query.length === 0) return
+
+        const result = this.fuse.search(this.state.query)
+
+        if (result.length === 0) {
+          this.setState({ searchResultCount: 'No', elements: [] })
+        } else {
+          const elements = []
+
+          const categories = {}
+
+          for (const item of result) {
+            const { key: resultKey } = item
+            const settingsElement = this.settingsElements.find(({ key }) => key === resultKey)
+            if (settingsElement) {
+              elements.push(settingsElement.component)
+
+              const category = resultKey.slice(0, resultKey.indexOf('.'))
+              if (categories.hasOwnProperty(category)) {
+                categories[category] += 1
+              } else {
+                categories[category] = 1
+              }
+            }
+          }
+
+          const {
+            config: { schema }
+          } = this.props
+
+          const index = Object.keys(schema.properties).reduce((acc, key) => {
+            const matches = categories[key]
+            if (matches) {
+              return [
+                ...acc,
+                {
+                  title: schema.properties[key].title,
+                  key,
+                  matches
+                }
+              ]
+            }
+
+            return acc
+          }, [])
+
+          this.setState({ searchResultCount: result.length, elements, index })
+        }
+      }
+
+      render() {
+        const className = this.props.theme.type === 'dark' ? 'bp3-dark' : undefined
+
+        return (
+          <RootStyle className={className}>
+            <SearchInput
+              query={this.state.query}
+              onQueryChange={this.handleQueryChange}
+              searchResultCount={this.state.searchResultCount}
+            />
+            <ContentContainerStyle>
+              <ConfigIndex items={this.state.index} scrollContainerId="settingsContainer" />
+              <SettingsContainerStyle id="settingsContainer">{this.state.elements}</SettingsContainerStyle>
+            </ContentContainerStyle>
+          </RootStyle>
         )
       }
-    })
-
-    // TODO: возможно следует сократить количество обходов схемы!!!
-    // заранее сохраняем эелементы форм одним массивом и данные для поиска
-    Object.entries(topics).forEach(([key, { properties }]) => {
-      properties.forEach(item => {
-        const { key: propertyKey, schema, value, setValue } = item
-        const label = uncamelcase(propertyKey.split('.').pop())
-
-        this.briefs.push({ key: propertyKey, label, description: schema.description })
-
-        const FormComponent = componentMaker(schema)({ label, ...{ ...schema } })
-
-        this.settingsElements.push({
-          key: propertyKey,
-          component: (
-            <Element name={propertyKey} key={propertyKey}>
-              <FormComponent value={value} onChange={setValue} />
-            </Element>
-          )
-        })
-      })
-    })
-
-    this.state.searchResultCount = this.briefs.length
-
-    this.fuse = new Fuse(this.briefs, settingsSearchOptions)
-
-    this.state.elements = this.makeDefaultContent()
-    this.state.index = this.makeDefaultIndex()
-  }
-
-  makeDefaultContent = () => {
-    let elements = []
-    this.topicElements.forEach(({ key: topicKey, component: TopicComponent }) => {
-      elements = [...elements, TopicComponent]
-      const settingsElements = this.settingsElements
-        .filter(({ key }) => key.startsWith(`${topicKey}.`))
-        .map(({ component: SettingsComponent }) => SettingsComponent)
-      elements = [...elements, ...settingsElements]
-    })
-
-    return elements
-  }
-
-  makeDefaultIndex = () => {
-    const {
-      config: { schema }
-    } = this.props
-
-    return Object.keys(schema.properties).map(key => ({
-      title: schema.properties[key].title,
-      key
-    }))
-  }
-
-  handleQueryChange = event => {
-    this.setState({ query: event.target.value })
-
-    if (event.target.value.length > 0) {
-      this.debouncedFilterSettings()
-    } else {
-      this.setState({
-        searchResultCount: this.briefs.length,
-        elements: this.makeDefaultContent(),
-        index: this.makeDefaultIndex()
-      })
     }
-  }
+  )
+)
 
-  filterSettings = () => {
-    if (this.state.query.length === 0) return
-
-    const result = this.fuse.search(this.state.query)
-
-    if (result.length === 0) {
-      this.setState({ searchResultCount: 'No', elements: [] })
-    } else {
-      const elements = []
-
-      const categories = {}
-
-      for (const item of result) {
-        const { key: resultKey } = item
-        const settingsElement = this.settingsElements.find(({ key }) => key === resultKey)
-        if (settingsElement) {
-          elements.push(settingsElement.component)
-
-          const category = resultKey.slice(0, resultKey.indexOf('.'))
-          if (categories.hasOwnProperty(category)) {
-            categories[category] += 1
-          } else {
-            categories[category] = 1
-          }
-        }
-      }
-
-      // const elements = this.settingsElements
-      //   .filter(({ key }) => !!result.find(({ key: resultKey }) => resultKey === key))
-      //   .map(({ component }) => component)
-
-      // тут ищем сколько для каждой категории найдено совпадений
-
-      const {
-        config: { schema }
-      } = this.props
-
-      const index = Object.keys(schema.properties).reduce((acc, key) => {
-        const matches = categories[key]
-        if (matches) {
-          return [
-            ...acc,
-            {
-              title: schema.properties[key].title,
-              key,
-              matches
-            }
-          ]
-        }
-
-        return acc
-      }, [])
-
-      this.setState({ searchResultCount: result.length, elements, index })
-    }
-  }
-
-  render() {
-    const className = this.props.theme.type === 'dark' ? 'bp3-dark' : undefined
-
-    return (
-      <RootStyle className={className}>
-        <SearchInput
-          query={this.state.query}
-          onQueryChange={this.handleQueryChange}
-          searchResultCount={this.state.searchResultCount}
-        />
-        <ContentContainerStyle>
-          <ConfigIndex items={this.state.index} scrollContainerId="settingsContainer" />
-          <SettingsContainerStyle id="settingsContainer">{this.state.elements}</SettingsContainerStyle>
-        </ContentContainerStyle>
-      </RootStyle>
-    )
-  }
-}
+export default ConfigEditor
