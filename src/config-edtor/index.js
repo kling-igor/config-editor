@@ -20,7 +20,6 @@ import Fuse from 'fuse.js'
 import { uncamelcase } from './utils'
 
 import { componentMaker } from './components/form-components'
-
 import SearchInput from './components/search-input'
 import ConfigIndex from './components/config-index'
 
@@ -71,7 +70,7 @@ const SettingsContainerStyle = styled.div`
   padding-left: 16px;
   padding-right: 16px;
   overflow: auto;
-  width: calc(100% - 250px);
+  width: calc(100% - 150px);
   min-width: 300px;
   height: 100%;
 `
@@ -86,9 +85,7 @@ export default class ConfigEditor extends Component {
 
   briefs = []
 
-  state = { query: '', searchResultCount: null, elements: [] }
-
-  index = []
+  state = { query: '', searchResultCount: null, elements: [], index: [] }
 
   constructor(props) {
     super(props)
@@ -99,6 +96,8 @@ export default class ConfigEditor extends Component {
 
     const topics = {}
 
+    const index = []
+
     // по всем корневым разделам (core, editor и т.д.)
     // TODO: возможно следует сократить количество обходов схемы!!!
     for (const key of Object.keys(config.schema.properties)) {
@@ -108,7 +107,7 @@ export default class ConfigEditor extends Component {
         properties: []
       }
 
-      this.index.push({ title: config.schema.properties[key].title, key })
+      index.push({ title: config.schema.properties[key].title, key })
 
       for (const subkey of Object.keys(config.schema.properties[key].properties)) {
         // схема элемента
@@ -116,8 +115,8 @@ export default class ConfigEditor extends Component {
         const propertyKey = `${key}.${subkey}`
         // хранилище для свойста
 
-        const title = uncamelcase(subkey.split('.').pop())
-        this.index.push({ title, key: propertyKey })
+        // const title = uncamelcase(subkey.split('.').pop())
+        // index.push({ title, key: propertyKey })
 
         const store = new (class {
           key = propertyKey
@@ -179,6 +178,7 @@ export default class ConfigEditor extends Component {
     this.fuse = new Fuse(this.briefs, settingsSearchOptions)
 
     this.state.elements = this.makeDefaultContent()
+    this.state.index = this.makeDefaultIndex()
   }
 
   makeDefaultContent = () => {
@@ -194,13 +194,28 @@ export default class ConfigEditor extends Component {
     return elements
   }
 
+  makeDefaultIndex = () => {
+    const {
+      config: { schema }
+    } = this.props
+
+    return Object.keys(schema.properties).map(key => ({
+      title: schema.properties[key].title,
+      key
+    }))
+  }
+
   handleQueryChange = event => {
     this.setState({ query: event.target.value })
 
     if (event.target.value.length > 0) {
       this.debouncedFilterSettings()
     } else {
-      this.setState({ searchResultCount: this.briefs.length, elements: this.makeDefaultContent() })
+      this.setState({
+        searchResultCount: this.briefs.length,
+        elements: this.makeDefaultContent(),
+        index: this.makeDefaultIndex()
+      })
     }
   }
 
@@ -212,11 +227,52 @@ export default class ConfigEditor extends Component {
     if (result.length === 0) {
       this.setState({ searchResultCount: 'No', elements: [] })
     } else {
-      const elements = this.settingsElements
-        .filter(({ key }) => !!result.find(({ key: resultKey }) => resultKey === key))
-        .map(({ component }) => component)
+      const elements = []
 
-      this.setState({ searchResultCount: result.length, elements })
+      const categories = {}
+
+      for (const item of result) {
+        const { key: resultKey } = item
+        const settingsElement = this.settingsElements.find(({ key }) => key === resultKey)
+        if (settingsElement) {
+          elements.push(settingsElement.component)
+
+          const category = resultKey.slice(0, resultKey.indexOf('.'))
+          if (categories.hasOwnProperty(category)) {
+            categories[category] += 1
+          } else {
+            categories[category] = 1
+          }
+        }
+      }
+
+      // const elements = this.settingsElements
+      //   .filter(({ key }) => !!result.find(({ key: resultKey }) => resultKey === key))
+      //   .map(({ component }) => component)
+
+      // тут ищем сколько для каждой категории найдено совпадений
+
+      const {
+        config: { schema }
+      } = this.props
+
+      const index = Object.keys(schema.properties).reduce((acc, key) => {
+        const matches = categories[key]
+        if (matches) {
+          return [
+            ...acc,
+            {
+              title: schema.properties[key].title,
+              key,
+              matches
+            }
+          ]
+        }
+
+        return acc
+      }, [])
+
+      this.setState({ searchResultCount: result.length, elements, index })
     }
   }
 
@@ -231,7 +287,7 @@ export default class ConfigEditor extends Component {
           searchResultCount={this.state.searchResultCount}
         />
         <ContentContainerStyle>
-          <ConfigIndex items={this.index} scrollContainerId="settingsContainer" />
+          <ConfigIndex items={this.state.index} scrollContainerId="settingsContainer" />
           <SettingsContainerStyle id="settingsContainer">{this.state.elements}</SettingsContainerStyle>
         </ContentContainerStyle>
       </RootStyle>

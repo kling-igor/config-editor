@@ -55,13 +55,13 @@ const GlobalStyle = createGlobalStyle`
     display: block;
   }
 
-  .active {
+  /* .active {
     color:#137CBD;
     opacity: 0.9;
     font-weight: bold;
     letter-spacing: -0.4px;
     
-  }
+  } */
 `
 // считанные данные из файла
 // const config = { core: { openEmptyEditorOnStart: false, warnOnLargeFileLimit: 20 } }

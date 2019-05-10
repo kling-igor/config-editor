@@ -33,15 +33,6 @@ const LabelStyle = styled.p`
   font-size: 1.2em;
 `
 
-const DumbStyle = styled.div`
-  height: 100%;
-  display: block;
-  ::after {
-    content: '.';
-    visibility: hidden;
-  }
-`
-
 const Description = Style => ({ children }) => {
   return (
     <Style>

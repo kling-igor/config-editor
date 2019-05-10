@@ -3,7 +3,7 @@ import styled, { withTheme } from 'styled-components'
 import { ScrollLink } from 'react-scroll'
 
 const IndexContainerStyle = styled.div`
-  width: 250px;
+  width: 150px;
   height: 100%;
   overflow: auto;
 `
@@ -39,7 +39,7 @@ const LinkComponent = ScrollLink(IndexElementTitleStyle)
 const IndexElementComponent = ({ keyProp, title, matches = '', scrollContainerId }) => (
   <IndexElementStyle>
     <LinkComponent
-      activeClass="active"
+      // activeClass="active"
       to={keyProp}
       spy={true}
       smooth={true}
