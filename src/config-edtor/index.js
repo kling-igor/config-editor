@@ -36,8 +36,12 @@ const settingsSearchOptions = {
 }
 
 const RootStyle = styled.div`
-  width: 100%;
+  max-width: 800px;
+  width: 800px;
   height: 100%;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
 `
 
 const LabelStyle = styled.p`
@@ -105,7 +109,8 @@ const SearchContainerStyle = styled.div`
   left: 0px;
   height: 35px;
   min-height: 35px;
-  width: 100%;
+  max-width: 800px;
+  width: 800px;
 `
 
 const ContentContainerStyle = styled.div`
@@ -117,9 +122,8 @@ const ContentContainerStyle = styled.div`
 `
 
 const IndexContainerStyle = styled.div`
-  width: 300px;
+  width: 250px;
   height: 100%;
-  background-color: gray;
   overflow: auto;
 `
 
@@ -135,19 +139,36 @@ const IndexElementStyle = styled.li`
   text-overflow: ellipsis;
   overflow: hidden;
   user-select: none;
+  color: black;
+`
+
+const IndexElementTitleStyle = styled.span`
+  opacity: 0.6;
+  :hover {
+    opacity: 1;
+  }
+`
+
+const IndexElementMatchesCountStyle = styled.span`
+  opacity: 0.8;
 `
 
 const SettingsContainerStyle = styled.div`
   padding-left: 16px;
   padding-right: 16px;
   overflow: auto;
-  width: calc(100% - 300px);
+  width: calc(100% - 250px);
   min-width: 300px;
   height: 100%;
 `
 
 const DumbStyle = styled.div`
-  height: calc(100% - 300px);
+  height: 100%;
+  display: block;
+  ::after {
+    content: '.';
+    visibility: hidden;
+  }
 `
 
 const Description = Style => ({ children }) => {
@@ -359,6 +380,34 @@ const SearchResultCount = withTheme(({ count }) => {
   return <SearchResultBadgeStyle>{`${count} Settings Found`}</SearchResultBadgeStyle>
 })
 
+const LinkComponent = ScrollLink(IndexElementTitleStyle)
+
+const IndexElementComponent = ({ keyProp, title, matches = '' }) => (
+  <IndexElementStyle>
+    <LinkComponent
+      activeClass="active"
+      to={keyProp}
+      spy={true}
+      smooth={true}
+      offset={-50}
+      duration={500}
+      containerId="settingsContainer"
+      onSetActive={data => {
+        // console.log(`set active ${data}`)
+      }}
+      onSetInactive={data => {
+        // console.log(`set inactive ${data}`)
+      }}
+      onClick={() => {
+        // console.log('click on:', key)
+      }}
+    >
+      {title}
+    </LinkComponent>
+    {!!matches && <IndexElementMatchesCountStyle>&nbsp;({matches})</IndexElementMatchesCountStyle>}
+  </IndexElementStyle>
+)
+
 @observer
 export default class ConfigEditor extends Component {
   // элементы отображения заголовков секций
@@ -474,11 +523,11 @@ export default class ConfigEditor extends Component {
       elements = [...elements, ...settingsElements]
     })
 
-    elements.push(
-      <Element name="__dumb__" key="__dumb__">
-        <DumbStyle />
-      </Element>
-    )
+    // elements.push(
+    //   <Element name="__dumb__" key="__dumb__">
+    //     <DumbStyle />
+    //   </Element>
+    // )
 
     return elements
   }
@@ -504,11 +553,11 @@ export default class ConfigEditor extends Component {
       const elements = this.settingsElements
         .filter(({ key }) => !!result.find(({ key: resultKey }) => resultKey === key))
         .map(({ component }) => component)
-      elements.push(
-        <Element name="__dumb__" key="__dumb__">
-          <DumbStyle />
-        </Element>
-      )
+      // elements.push(
+      //   <Element name="__dumb__" key="__dumb__">
+      //     <DumbStyle />
+      //   </Element>
+      // )
 
       this.setState({ searchResultCount: result.length, elements })
     }
@@ -535,33 +584,7 @@ export default class ConfigEditor extends Component {
             <IndexListStyle>
               {this.index.map(item => {
                 const { title, key } = item
-                return (
-                  <Link
-                    activeClass="active"
-                    key={key}
-                    to={key}
-                    spy={true}
-                    smooth={true}
-                    offset={-50}
-                    duration={500}
-                    containerId="settingsContainer"
-                    onSetActive={data => {
-                      // console.log(`set active ${data}`)
-                    }}
-                    onSetInactive={data => {
-                      // console.log(`set inactive ${data}`)
-                    }}
-                  >
-                    <IndexElementStyle
-                      key={key}
-                      onClick={() => {
-                        // console.log('click on:', key)
-                      }}
-                    >
-                      {title}
-                    </IndexElementStyle>
-                  </Link>
-                )
+                return <IndexElementComponent key={key} keyProp={key} title={title} matches={11} />
               })}
             </IndexListStyle>
           </IndexContainerStyle>
