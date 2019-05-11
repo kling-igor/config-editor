@@ -64,6 +64,27 @@ const GlobalStyle = createGlobalStyle`
     letter-spacing: -0.4px;
     
   } */
+
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  /* Track */
+  ::-webkit-scrollbar-track {
+    background: darkgray;
+  }
+
+  /* Handle */
+  ::-webkit-scrollbar-thumb {
+    background: #888;
+  }
+
+  /* Handle on hover */
+  ::-webkit-scrollbar-thumb:hover {
+    background: #555;
+  }
+
+
 `
 // считанные данные из файла
 // const config = { core: { openEmptyEditorOnStart: false, warnOnLargeFileLimit: 20 } }
@@ -88,6 +109,14 @@ const ConfigSchema = {
         enum: ['dark', 'light'],
         default: 'dark',
         description: 'UI theme'
+      },
+      rootFolderWhiteList: {
+        type: 'array',
+        default: ['controllers', 'views', 'models', 'styles', 'services', 'printforms', 'files', 'README.md'],
+        items: {
+          type: 'string'
+        },
+        description: 'The list of entries to be shown in file tree'
       },
       openEmptyEditorOnStart: {
         type: 'boolean',

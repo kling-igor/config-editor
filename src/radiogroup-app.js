@@ -20,7 +20,8 @@ import theme from './themes/ui/light'
 
 import styled, { createGlobalStyle, ThemeProvider } from 'styled-components'
 
-import EditableRadioGroup from './config-edtor/components/editable-radiogroup'
+// import EditableRadioGroup from './config-edtor/components/editable-radiogroup'
+import ArrayComponent from './config-edtor/components/array-component'
 
 const GlobalStyle = createGlobalStyle`
   html {
@@ -76,11 +77,14 @@ export default class App extends Component {
       <ThemeProvider theme={theme}>
         <>
           <GlobalStyle theme={theme} />
-          <EditableRadioGroup
+          <ArrayComponent
             theme={theme}
             array={['http://blackhole.dev.marm.com', 'http://lic.dev.marm.com', 'http://monitoring.dev.marm.com']}
             addButtonLabel="Add URL"
             inputPlaceholder="URL..."
+            onChange={array => {
+              console.log('NEW ARRAY:', array)
+            }}
           />
         </>
       </ThemeProvider>

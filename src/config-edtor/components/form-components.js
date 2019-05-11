@@ -8,6 +8,8 @@ import { Label, HTMLSelect } from '@blueprintjs/core'
 import { Tooltip, Position, Intent } from '@blueprintjs/core'
 import ReactMarkdown from 'react-markdown'
 
+import ArrayComponent from './array-component'
+
 import { isPlainObject } from '../utils'
 
 const ComponentContainer = styled.div`
@@ -200,6 +202,25 @@ const makeOptionsComponent = ({ label, enum: enumValues, default: defaultValue, 
     )
   })
 
+const makeArrayComponent = ({ label, description, addLabel = 'Add', inputPlaceholder = 'Item...' }) =>
+  withTheme(
+    observer(({ theme, store: { value, setValue } }) => {
+      return (
+        <ComponentContainer>
+          <LabelStyle>{label}</LabelStyle>
+          <RegularDescription>{description}</RegularDescription>
+          <ArrayComponent
+            theme={theme}
+            array={value}
+            addButtonLabel={addLabel}
+            inputPlaceholder={inputPlaceholder}
+            onChange={setValue}
+          />
+        </ComponentContainer>
+      )
+    })
+  )
+
 const makeDefaultComponent = ({ label, default: defaultValue, description }) =>
   observer(({ store: { value, setValue } }) => {
     return (
@@ -214,7 +235,8 @@ const makeDefaultComponent = ({ label, default: defaultValue, description }) =>
 const COMPONENT_MAKERS = {
   boolean: makeCheckboxComponent,
   number: makeNumberInputComponent,
-  integer: makeIntegerInputComponent
+  integer: makeIntegerInputComponent,
+  array: makeArrayComponent
 }
 
 /**
