@@ -116,6 +116,8 @@ const ConfigSchema = {
         items: {
           type: 'string'
         },
+        addLabel: 'Add',
+        inputPlaceholder: 'Item...',
         description: 'The list of entries to be shown in file tree'
       },
       openEmptyEditorOnStart: {
